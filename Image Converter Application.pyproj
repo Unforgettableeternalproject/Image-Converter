@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>46331a2c-d78c-4317-8930-af2353678d88</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Image_Converter_Application.py</StartupFile>
+    <StartupFile>Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,7 +21,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Image_Converter_Application.py" />
+    <Compile Include="Classes\Effect Processor.py" />
+    <Compile Include="Classes\Position Processor.py" />
+    <Compile Include="Classes\File Manager.py" />
+    <Compile Include="Classes\User Interface.py" />
+    <Compile Include="Main.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Classes\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
