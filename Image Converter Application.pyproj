@@ -21,14 +21,17 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Classes\Effect Processor.py" />
-    <Compile Include="Classes\Position Processor.py" />
-    <Compile Include="Classes\File Manager.py" />
-    <Compile Include="Classes\User Interface.py" />
+    <Compile Include="Classes\EffectProcessor.py" />
+    <Compile Include="Classes\PositionProcessor.py" />
+    <Compile Include="Classes\FileManager.py" />
+    <Compile Include="Classes\UserInterface.py" />
     <Compile Include="Main.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Classes\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="位置資訊.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

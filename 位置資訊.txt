@@ -1,0 +1,11 @@
+以1500*844的比例  換算->1000*563
+
+1:(853,133)->(569,89) LII (Local Image Import)
+2:(1174,257)->(783,171) CI (Cloud Import)
+3:(1500, 257)->(1000,171) L (Label)
+4:(853,257)->(569,171) IUI (Image URL Import)
+5:(405,673)->(270,449) EP (Effect Processer)
+6:(853,368)->(569,245) SD (Size Display)
+7:(1500,844)->(1000,563) PoI (Preview of Image)
+8:(853,673)->(569,449) PP (Position Processor)
+9:(853,844)->(569,563) ExP (Export)
