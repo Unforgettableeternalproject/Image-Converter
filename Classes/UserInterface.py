@@ -2,7 +2,7 @@
 from os import path
 import tkinter as tk
 from PIL import Image,ImageTk
-import cv2
+
 
 class ui():
     def __init__(self) -> None:
