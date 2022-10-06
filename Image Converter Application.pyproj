@@ -29,9 +29,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Classes\" />
+    <Folder Include="Explanation Files\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="位置資訊.txt" />
+    <Content Include="Explanation Files\專案構圖說明.txt" />
+    <Content Include="Explanation Files\位置資訊.txt" />
+    <Content Include="Explanation Files\圖片轉換器專案架構圖.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
