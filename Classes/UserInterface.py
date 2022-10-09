@@ -1,8 +1,18 @@
 ﻿from tkinter.constants import *
 from os import path
 import tkinter as tk
+from turtle import onclick
 from PIL import Image,ImageTk
+import tkinter.messagebox
+from tkinter import filedialog
+import os
 
+file_path="a"
+def OnopenFile():
+    # msg = "Hello, {}.".format(entry.get())
+    global file_path
+    file_path = filedialog.askopenfilename()
+    tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 
 class ui():
     def __init__(self) -> None:
@@ -20,11 +30,14 @@ class ui():
         self.win.iconbitmap('Bernie.ico')
         #本地檔案導入方式(LII)
         self.promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15)
-        self.entryL = tk.Text(height=2, width=45)
-        self.entryL['state'] = DISABLED
-        self.btnL = tk.Button(text="...", height=1, width=4)
+        self.btnL = tk.Button(text="...", height=1, width=4,command=OnopenFile)
+        self.btnL.pack()
+        self.labelL = tk.Label( text = file_path)
+        self.labelL.pack()
+        # self.entryL = tk.Text(height=2, width=45)
+        # self.entryL['state'] = DISABLED
         self.promptL.place(x=25,y=27)
-        self.entryL.place(x=150,y=30)
+        self.labelL.place(x=150,y=30)#entry into label
         self.btnL.place(x=485,y=32)
         #網路檔案導入方式(IUI)
         self.promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15)
