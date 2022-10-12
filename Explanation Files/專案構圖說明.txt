@@ -17,7 +17,7 @@ EP的部分:
 滾動HSV值(滑桿x3)
 侵蝕、膨脹(按鈕x2)
 濾波器(下拉式選單(Boxblur、Blur、Medianblur、Bilateral、Gaussian))
-平滑、銳化(滑桿(Gamma值變換))
+#平滑、銳化(滑桿(Gamma值變換))
 灰階(勾選方框)
 
 PP的部分:

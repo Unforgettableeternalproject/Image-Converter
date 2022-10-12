@@ -1,11 +1,9 @@
-﻿from msilib.schema import File
-from tkinter.constants import *
+﻿from tkinter.constants import *
 from os import path
 import tkinter as tk
-from turtle import onclick
 from PIL import Image,ImageTk
-import tkinter.messagebox
 from tkinter import filedialog
+from tkinter import ttk
 import os
 
 file_path="a"
@@ -88,6 +86,16 @@ class ui():
             #侵蝕、膨脹的部分
         self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7).place(x=50, y=280)
         self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7).place(x=50, y=330)
+        self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
+        self.edvalue = tk.Entry(width=4, state=DISABLED).place(x=200, y=344)
+        self.openingck = tk.Checkbutton(text="去白點").place(x=125, y=285)
+        self.closingck = tk.Checkbutton(text="去黑點").place(x=195, y=285)
+        self.gradientck = tk.Checkbutton(text="只顯示輪廓").place(x=148, y=310)
+            #濾波器的部分
+        self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
+        self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"]).place(x=85, y=385)
+            #灰階的部分
+        self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
         #方位處理器(PP)
         #尺寸動態顯示(SD)
         #圖片資訊顯示(ID)
