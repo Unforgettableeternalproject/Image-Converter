@@ -57,7 +57,7 @@ class ui():
         self.btnDB = tk.Button(text="Dropbox", image = self.DBicon).place(x=680, y=60)
         #浮水印(L)
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
-        self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=20).place(x=800, y=25)
+        self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)
         #效果處理器(EP)
             #HSV滑桿的部分
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
