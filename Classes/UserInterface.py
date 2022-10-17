@@ -133,9 +133,10 @@ class ui():
         self.impwaydis = tk.Label(text="導入方式:").place(x=630, y=190)
         self.impway = tk.Label(text="尚未導入!!").place(x=688, y=190)
         #圖片預覽(PoI)
-        preview = tk.PhotoImage('Preview.png')
-        self.preview = tk.Label(image=preview)
-        self.preview.image = preview
+        img = Image.open('Preview.png')
+        tk_img = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+        self.preview = tk.Label(image=tk_img, width=420, height=300)
+        self.preview.place(x=570, y=230)
         #輸出(ExP)
 
         #菜單
