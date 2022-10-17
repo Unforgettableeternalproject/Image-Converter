@@ -6,7 +6,7 @@ Effect Pocessor:效果處理器，目前暫定應該能加入預設效果、調整HSV數值等
 Size Display:顯示圖片尺寸
 Information Display:顯示圖片名稱、導入方式，以及還原/重作效果
 Position Processor:變形處理器，改變圖片大小、等比例與非等比例縮放、旋轉等等
-Preview of Image:圖像及時預覽(對於不同尺寸的圖片會加以縮放(等比)並維持在固定視窗內)
+Preview of Image:圖像及時預覽(對於不同尺寸的圖片會加以縮放(等比)並維持在固定視窗內) 930x665
 Export:導出圖片，在圖片之左下角加入浮水印
 
 除此之外，我還想加個Tktinter的Menu
