@@ -2,7 +2,7 @@
 from os import path
 import tkinter as tk
 from PIL import Image,ImageTk
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
 from tkinter import ttk
 from idlelib.tooltip import Hovertip
 
@@ -126,9 +126,16 @@ class ui():
         self.zero.select()
         self.zero.place(x=320, y=330)
         self.dlist.place(x=455, y=385)
-        #尺寸動態顯示(SD)
         #圖片資訊顯示(ID)
+        self.idlabel = tk.Label(text="圖片資訊:").place(x=600, y=150)
+        self.imgnamedis = tk.Label(text="檔案名稱:").place(x=630, y=170)
+        self.imgname = tk.Label(text="尚未導入!!").place(x=688, y=170)
+        self.impwaydis = tk.Label(text="導入方式:").place(x=630, y=190)
+        self.impway = tk.Label(text="尚未導入!!").place(x=688, y=190)
         #圖片預覽(PoI)
+        preview = tk.PhotoImage('Preview.png')
+        self.preview = tk.Label(image=preview)
+        self.preview.image = preview
         #輸出(ExP)
 
         #菜單
