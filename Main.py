@@ -1,8 +1,8 @@
-﻿import Classes.UserInterface as UI
-import Classes.FileManager as FM
+﻿import Classes.UserInterface as ui
+import Classes.FileManager as fm
 
-#u = UI.ui()
-#u.open_window()
-f = FM.file_man()
-print(f.driveFetch())
+u = ui.ui()
+u.open_window()
+#f = fm.file_man()
+#print(f.driveFetch())
 
