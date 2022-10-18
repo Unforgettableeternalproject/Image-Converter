@@ -25,6 +25,7 @@
     <Compile Include="Classes\EffectProcessor.py" />
     <Compile Include="Classes\PositionProcessor.py" />
     <Compile Include="Classes\FileManager.py" />
+    <Compile Include="Classes\StepRecord.py" />
     <Compile Include="Classes\UserInterface.py" />
     <Compile Include="Main.py" />
   </ItemGroup>
@@ -33,6 +34,7 @@
     <Folder Include="Explanation Files\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="credentials.json" />
     <Content Include="Explanation Files\專案構圖說明.txt" />
     <Content Include="Explanation Files\位置資訊.txt" />
     <Content Include="Explanation Files\圖片轉換器專案架構圖.png" />

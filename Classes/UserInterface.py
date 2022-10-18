@@ -147,7 +147,7 @@ class ui():
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
         self.locals = tk.Button(text="下載至電腦", height=2, width=20).place(x=30, y=480)
-        self.clouds = tk.Button(text="上傳至雲端", height=2, width=20)
+        self.clouds = tk.Button(text="上傳至雲端(?)", height=2, width=20)
         self.tp2 = Hovertip(self.clouds, "目前只支援Google雲端硬碟")
         self.clouds.place(x=200, y=480)
         self.mails = tk.Button(text="寄送給他人", height=2, width=20).place(x=370, y=480)
