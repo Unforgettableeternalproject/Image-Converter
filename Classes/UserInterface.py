@@ -35,11 +35,7 @@ class ui():
         self.entryU['state'] = DISABLED
 
     def openFIleU(self):
-        try:
-            #f.loadFileURL()
-            self.file_path = f.loadFileURL()
-        except Exception as e:
-            self.file_path = e
+        self.file_path = f.loadFileURL()
         self.importtype = "Web"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL

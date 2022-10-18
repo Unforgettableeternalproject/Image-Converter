@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import filedialog
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
-from PIL import Image,ImageDraw,ImageFont
 
 class file_man():
     def __init__(self) -> None:
