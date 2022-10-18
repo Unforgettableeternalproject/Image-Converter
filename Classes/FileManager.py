@@ -57,9 +57,10 @@ class file_man():
         msglabel.pack()
         
         yrbtn['command'] = chkpath
-        self.prompt.protocol("WM_DELETE_WINDOW", disable_event)
+#        self.prompt.protocol("WM_DELETE_WINDOW", disable_event)
         self.prompt.wait_window()
-        return path.get()
+        ret = path.get() if path.get() != "" and self.is_url(path.get()) else "Invalid Input!!!"
+        return ret
 
     def loadFileLocal(self):
         file_path = filedialog.askopenfilename()
@@ -86,10 +87,8 @@ class file_man():
         items = results.get('files', [])
 
         if not items:
-            print('No files found.')
+            return "沒有找到任何資料"
         else:
-            print('Files:')
-            for item in items:
-                print(u'{0} ({1})'.format(item['name'], item['id']))
+            return items
 
 
