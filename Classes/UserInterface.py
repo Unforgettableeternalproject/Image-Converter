@@ -1,33 +1,54 @@
 ﻿from tkinter.constants import *
 from os import path
 import tkinter as tk
-from PIL import Image,ImageTk
-from tkinter import PhotoImage, filedialog
-from tkinter import ttk
+from PIL import Image, ImageTk
+from tkinter import filedialog, ttk
 from idlelib.tooltip import Hovertip
-
-file_path="a"
+import Classes.FileManager as fm
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
-
+f = fm.file_man()
 class ui():
-    def OnopenFile(self):
-        # msg = "Hello, {}.".format(entry.get())
-        file_path = filedialog.askopenfilename()
-        self.entryL['state'] = NORMAL
-        self.entryL.delete(1.0, "end")
-        self.entryL.insert("insert", file_path)
-        self.entryL['state'] = DISABLED
-        return file_path
-
-    def Update(self, scale, text):
-        pass
 
     def __init__(self) -> None:
         self.win = tk.Tk()
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
+        self.file_path = "None"
+        self.importtype = "None"
+        pass
+
+    def clear(self):
+        self.entryL.delete(1.0, "end")
+        self.entryU.delete(1.0, "end")
+
+    def openFileL(self):
+        # msg = "Hello, {}.".format(entry.get())
+        self.file_path = f.loadFileLocal()
+        self.importtype = "Local"
+        self.entryL['state'] = NORMAL
+        self.entryU['state'] = NORMAL
+        self.clear()
+        self.entryL.insert("insert", self.file_path)
+        self.entryL['state'] = DISABLED
+        self.entryU['state'] = DISABLED
+
+    def openFIleU(self):
+        try:
+            #f.loadFileURL()
+            self.file_path = f.loadFileURL()
+        except Exception as e:
+            self.file_path = e
+        self.importtype = "Web"
+        self.entryL['state'] = NORMAL
+        self.entryU['state'] = NORMAL
+        self.clear()
+        self.entryU.insert("insert", self.file_path)
+        self.entryL['state'] = DISABLED
+        self.entryU['state'] = DISABLED
+
+    def Update(self, scale, text):
         pass
 
     def open_window(self):
@@ -39,15 +60,13 @@ class ui():
 
         #本地檔案導入方式(LII)
         self.promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=27)
-        self.entryL = tk.Text(height=2, width=45)
-        self.entryL['state'] = DISABLED
-        self.btnL = tk.Button(text="...", height=1, width=4,command=self.OnopenFile).place(x=485, y=32)
+        self.entryL = tk.Text(height=2, width=45, state="disabled")
+        self.btnL = tk.Button(text="...", height=1, width=4, command=self.openFileL).place(x=485, y=32)
         self.entryL.place(x=150, y=30)
         #網路檔案導入方式(IUI)
         self.promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=77)
-        self.entryU = tk.Text(height=2, width=45)
-        self.entryU['state'] = DISABLED
-        self.btnU = tk.Button(text="...", height=1, width=4).place(x=485, y=82)
+        self.entryU = tk.Text(height=2, width=45, state="disabled")
+        self.btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU).place(x=485, y=82)
         self.entryU.place(x=150, y=80)
         #雲端導入方式(CI)
         self.GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
