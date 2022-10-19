@@ -1,5 +1,5 @@
 ﻿from __future__ import print_function
-import os.path, io
+import os.path, io, time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -30,30 +30,41 @@ class file_man():
 
     def loadFileViaDrive(self):
         def chkpath():
-            fid = file_id[display.index(file_name.get())]
-            if (file_name == "" or not self.is_ImageFile(fid)):
+            try:
+                fid = file_id[display.index(file_name.get())]
+            except:
+                fid = ''
+            if (file_name.get() == "" or not self.is_ImageFile(fid)):
                 self.alertmsg.set("The file was not an image.")
             else:
                 self.msglabel['fg'] = 'forestgreen'
                 self.alertmsg.set("Trying to download...")
+                self.promptD.update()
                 try:
                     self.path = self.driveDownload(fid)
-                    prompt.destroy()
-                    prompt.update()
+                    self.promptD.update()
+                    self.promptD.destroy()
                 except Exception:
                     self.msglabel['fg'] = 'maroon'
                     self.alertmsg.set("Unknown error occured, please try another file.")
-                
-        item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗
+
+        self.path = tk.StringVar()
+        self.promptD = tk.Toplevel()
+        self.promptD.iconbitmap('Bernie.ico')
+        self.promptD.title("Google Drive File Selector")
+        self.promptD.geometry('350x150')
+        self.promptD.resizable(0,0)
+        try:       
+            item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗
+            if (len(item_list) == 0): 
+                showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
+                self.promptD.destroy()
+        except:
+            showerror('檔案錯誤', '存取雲端硬碟時出現錯誤!')
+            self.promptD.destroy()
         display = [x['name'] for x in item_list]
         file_id = [x['id'] for x in item_list]
-        self.path = ''
-        prompt = tk.Toplevel()
-        prompt.iconbitmap('Bernie.ico')
-        prompt.title("Google Drive File Selector")
-        prompt.geometry('350x150')
-        prompt.resizable(0,0)
-        Cs = tk.Frame(prompt, width=200, height=200)
+        Cs = tk.Frame(self.promptD, width=200, height=200)
         Cs.pack()
         file_name = tk.StringVar()
         self.alertmsg = tk.StringVar()
@@ -67,9 +78,9 @@ class file_man():
         yrbtn.pack()
         self.msglabel.pack()
         self.progress.pack()
-        prompt.wait_window()
+        self.promptD.wait_window()
         ret = self.path if self.path != "" else "None"
-        return ret
+        return ret, file_name.get()
 
     def loadFileURL(self):
         def disable_event():
@@ -135,17 +146,19 @@ class file_man():
             fields="id, name, mimeType, size, parents",
             supportsAllDrives=True,
         ).execute()
-        file_mimeType = file_metadata.get("mimeType")
-        final_filename = file_metadata["name"] + file_mimeType
+        final_filename = file_metadata["name"]
         with io.FileIO(final_filename, "wb") as fh:
-            self.alertmsg = "start downloading"
+            self.alertmsg = "Start downloading..."
+            self.promptD.update()
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-                self.alertmsg = f"{final_filename} Download {status.progress()*100:7.2f}%."
+                self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
                 #self.progress['value'] = status.progress()*100
-        self.alertmsg = "download complete"
+                self.promptD.update()
+        self.alertmsg = "Download complete"
+        return final_filename
 
     def is_ImageFile(self, id):
         supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']
@@ -163,14 +176,17 @@ class file_man():
                 token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
 
         service = build('drive', 'v3', credentials=creds)
-        file_metadata = service.files().get(
+        try:
+            file_metadata = service.files().get(
             fileId = id,
             fields="id, name, mimeType, size, parents",
             supportsAllDrives=True,
-        ).execute()
+            ).execute()
     
-        file_mimeType = file_metadata.get("mimeType")
-        return file_mimeType in supported_files
+            file_mimeType = file_metadata.get("mimeType")
+            return file_mimeType in supported_files
+        except:
+            return False
 
     def driveFetch(self):
         creds = None

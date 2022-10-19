@@ -1,9 +1,10 @@
 ﻿from tkinter.constants import *
-from os import path
+from os import path, remove
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
 from idlelib.tooltip import Hovertip
+from tkinter.messagebox import * 
 import Classes.FileManager as fm
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
@@ -16,7 +17,9 @@ class ui():
         self.align_mode = 'nsew'
         self.pad = 8
         self.file_path = "None"
+        self.file_name = "None"
         self.importtype = "None"
+        self.cloudpath = "None"
         pass
 
     def clear(self):
@@ -26,8 +29,13 @@ class ui():
         self.btnGD['state'] = NORMAL
 
     def openFileGD(self):
-        self.file_path = f.loadFileViaDrive()
-        if(self.file_path != 'None'):
+        self.file_path, self.file_name = f.loadFileViaDrive()
+        if(path.isfile(self.file_path)):
+            showinfo('成功!', '雲端檔案已經成功匯入!')
+            self.importtype = "從雲端硬碟導入"
+            if(path.exists(self.cloudpath)): remove(self.cloudpath)
+            self.file_path = path.realpath(self.file_path)
+            self.cloudpath = self.file_path
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
@@ -35,32 +43,43 @@ class ui():
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
+            self.updateID(self.file_name, self.importtype)
         else:
+            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
             pass #錯誤訊息視窗
 
 
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
         self.file_path = f.loadFileLocal()
-        self.importtype = "Local"
+        self.importtype = "從本地端導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
+        if(path.exists(self.cloudpath)): remove(self.cloudpath)
         self.entryL.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
+        self.updateID('測試', self.importtype)
 
     def openFIleU(self):
         self.file_path = f.loadFileURL()
-        self.importtype = "Web"
+        self.importtype = "從URL導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
+        if(path.exists(self.cloudpath)): remove(self.cloudpath)
         self.entryU.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
+        if(self.file_path == "Invalid Input!!!"): 
+            self.file_path = "None"
+            self.updateID('尚未導入!!', '尚未導入!!')
+        else: self.updateID('測試', self.importtype)
 
-    def Update(self, scale, text):
+    def updateID(self, filename, way):
+        self.imgname['text'] = filename
+        self.impway['text'] = way
         pass
 
     def open_window(self):
@@ -150,9 +169,11 @@ class ui():
         #圖片資訊顯示(ID)
         self.idlabel = tk.Label(text="圖片資訊:").place(x=600, y=150)
         self.imgnamedis = tk.Label(text="檔案名稱:").place(x=630, y=170)
-        self.imgname = tk.Label(text="尚未導入!!").place(x=688, y=170)
+        self.imgname = tk.Label(text="尚未導入!!")
         self.impwaydis = tk.Label(text="導入方式:").place(x=630, y=190)
-        self.impway = tk.Label(text="尚未導入!!").place(x=688, y=190)
+        self.impway = tk.Label(text="尚未導入!!")
+        self.imgname.place(x=688, y=170)
+        self.impway.place(x=688, y=190)
         #還原、重作(Un/Redo)
         self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
         self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
