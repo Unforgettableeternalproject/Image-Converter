@@ -11,19 +11,13 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
+import requests
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 class file_man():
     def __init__(self) -> None:
         pass
-
-    def is_url(self, url):
-        try:
-            result = urlparse(url)
-            return all([result.scheme, result.netloc])
-        except ValueError:
-            return False
 
     def loadFileViaDropbox(self):
         pass
@@ -80,21 +74,37 @@ class file_man():
         self.progress.pack()
         self.promptD.wait_window()
         ret = self.path if self.path != "" else "None"
-        return ret, file_name.get()
+        return str(ret), file_name.get()
 
     def loadFileURL(self):
-        def disable_event():
-            pass
-        
+        supported_files = ['.jpg', '.png', '.jpeg', '.bmp', '.webp', '.heic']
+        self.mimetype = ''
+        filename = ''
+        def is_url(url):
+            try:
+                result = urlparse(url)
+                return all([result.scheme, result.netloc])
+            except ValueError:
+                return False
+
         def chkpath():
             if(path.get() == ""):
                 alertmsg.set("Please enter a image URL.")
             else:
-                if(not self.is_url(path.get())):
+                if(not is_url(path.get())):
                     alertmsg.set("Please enter a VALID image URL.")
                 else:
-                    prompt.destroy()
-                    prompt.update()
+                    for i in supported_files:
+                        if(i in path.get()):
+                            self.mimetype = i
+                            break
+                    if self.mimetype != '':
+                        img_data = requests.get(path.get()).content
+                        with open("url_image" + self.mimetype, "wb") as handler:
+                            handler.write(img_data)
+                        prompt.destroy()
+                        prompt.update()
+                    else: alertmsg.set("Please enter a VALID image URL.")
 
         prompt = tk.Toplevel()
         prompt.iconbitmap('Bernie.ico')
@@ -113,10 +123,10 @@ class file_man():
         userkeyin.pack()
         yrbtn.pack()
         msglabel.pack()
-#        self.prompt.protocol("WM_DELETE_WINDOW", disable_event)
         prompt.wait_window()
-        ret = path.get() if path.get() != "" and self.is_url(path.get()) else "Invalid Input!!!"
-        return ret
+        filename = "url_image" + self.mimetype if self.mimetype != '' else "Invalid Input!!!"
+        ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
+        return ret, filename
 
     def loadFileLocal(self):
         file_path = filedialog.askopenfilename()

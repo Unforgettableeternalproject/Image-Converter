@@ -10,3 +10,4 @@ googleapis-common-protos == 1.56.4
 httplib2 == 0.20.4
 oauthlib == 3.2.2
 urllib3 == 1.26.9
+requests == 2.28.1

@@ -19,8 +19,20 @@ class ui():
         self.file_path = "None"
         self.file_name = "None"
         self.importtype = "None"
-        self.cloudpath = "None"
+        self.dlpath = "None"
         pass
+
+    def example(self):
+        self.file_path = path.realpath('Default Image.png')
+        self.file_name = '範例圖片.png'
+        self.importtype = "範例圖片檔案"
+        if(path.exists(self.dlpath)): remove(self.dlpath)
+        self.entryL['state'] = NORMAL
+        self.entryU['state'] = NORMAL
+        self.clear()
+        self.entryL['state'] = DISABLED
+        self.entryU['state'] = DISABLED
+        self.updateID(self.file_name, self.importtype)
 
     def clear(self):
         self.entryL.delete(1.0, "end")
@@ -33,9 +45,9 @@ class ui():
         if(path.isfile(self.file_path)):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             self.importtype = "從雲端硬碟導入"
-            if(path.exists(self.cloudpath)): remove(self.cloudpath)
+            if(path.exists(self.dlpath)): remove(self.dlpath)
             self.file_path = path.realpath(self.file_path)
-            self.cloudpath = self.file_path
+            self.dlpath = self.file_path
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
@@ -53,31 +65,37 @@ class ui():
         # msg = "Hello, {}.".format(entry.get())
         self.file_path = f.loadFileLocal()
         self.importtype = "從本地端導入"
+        self.file_name = path.basename(self.file_path)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.cloudpath)): remove(self.cloudpath)
+        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        self.updateID('測試', self.importtype)
-
+        if(self.file_path == ""): 
+            self.file_path = "None"
+            self.updateID('尚未導入!!', '尚未導入!!')
+        else: self.updateID(self.file_name, self.importtype)
+        
     def openFIleU(self):
-        self.file_path = f.loadFileURL()
+        self.file_path, self.file_name = f.loadFileURL()
         self.importtype = "從URL導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.cloudpath)): remove(self.cloudpath)
+        if(path.exists(self.dlpath)): remove(self.dlpath)
+        self.dlpath = self.file_path
         self.entryU.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        if(self.file_path == "Invalid Input!!!"): 
+        if(self.file_name == "Invalid Input!!!"): 
             self.file_path = "None"
             self.updateID('尚未導入!!', '尚未導入!!')
-        else: self.updateID('測試', self.importtype)
+        else: self.updateID(self.file_name, self.importtype)
 
     def updateID(self, filename, way):
+        if(len(filename) > 13): filename = filename[:13] + '...'
         self.imgname['text'] = filename
         self.impway['text'] = way
         pass
@@ -114,9 +132,9 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=360, length=200, orient=tk.HORIZONTAL).place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=230)
+        self.H_slider = tk.Scale(from_=1, to=360, length=200, orient=tk.HORIZONTAL).place(x=50, y=150)
+        self.S_slider = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=190)
+        self.V_slider = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
         self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
@@ -184,10 +202,10 @@ class ui():
         self.preview.place(x=570, y=230)
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
-        self.locals = tk.Button(text="下載至電腦", height=2, width=20).place(x=30, y=480)
-        self.clouds = tk.Button(text="上傳至雲端(?)", height=2, width=20)
-        self.tp2 = Hovertip(self.clouds, "目前只支援Google雲端硬碟")
-        self.clouds.place(x=200, y=480)
+        self.localS = tk.Button(text="下載至電腦", height=2, width=20).place(x=30, y=480)
+        self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20)
+        self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
+        self.cloudS.place(x=200, y=480)
         self.mails = tk.Button(text="寄送給他人", height=2, width=20).place(x=370, y=480)
 
         #菜單
@@ -195,7 +213,7 @@ class ui():
 
         self.win.config(menu=self.menu)
         self.file = tk.Menu(self.menu, tearoff=0)
-        self.file.add_command(label='顯示範例') #程式中顯示範例圖片檔的預覽
+        self.file.add_command(label='顯示範例', command=self.example) #程式中顯示範例圖片檔的預覽
         self.file.add_command(label='完全重置', foreground='red') #跳出視窗顯示警告，並詢問是否真的要重置
 
         self.window = tk.Menu(self.menu, tearoff=0)
