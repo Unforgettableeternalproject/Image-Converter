@@ -1,13 +1,14 @@
 ﻿from __future__ import print_function
-import os.path
+import os.path, io
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from googleapiclient.http import MediaIoBaseDownload
 from tkinter.constants import *
 from tkinter.messagebox import *    
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
 
@@ -24,6 +25,52 @@ class file_man():
         except ValueError:
             return False
 
+    def loadFileViaDropbox(self):
+        pass
+
+    def loadFileViaDrive(self):
+        def chkpath():
+            fid = file_id[display.index(file_name.get())]
+            if (file_name == "" or not self.is_ImageFile(fid)):
+                self.alertmsg.set("The file was not an image.")
+            else:
+                self.msglabel['fg'] = 'forestgreen'
+                self.alertmsg.set("Trying to download...")
+                try:
+                    self.path = self.driveDownload(fid)
+                    prompt.destroy()
+                    prompt.update()
+                except Exception:
+                    self.msglabel['fg'] = 'maroon'
+                    self.alertmsg.set("Unknown error occured, please try another file.")
+                
+        item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗
+        display = [x['name'] for x in item_list]
+        file_id = [x['id'] for x in item_list]
+        self.path = ''
+        prompt = tk.Toplevel()
+        prompt.iconbitmap('Bernie.ico')
+        prompt.title("Google Drive File Selector")
+        prompt.geometry('350x150')
+        prompt.resizable(0,0)
+        Cs = tk.Frame(prompt, width=200, height=200)
+        Cs.pack()
+        file_name = tk.StringVar()
+        self.alertmsg = tk.StringVar()
+        inputlabel = tk.Label(Cs, text="Choose a file from below (Must be an image):")
+        userchoosefrom = ttk.Combobox(Cs, textvariable=file_name, width=17, state="readonly", value=display)
+        yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
+        self.msglabel = tk.Label(Cs, textvariable=self.alertmsg, fg='maroon')
+        self.progress = ttk.Progressbar(Cs, length=200, mode='determinate')
+        inputlabel.pack()
+        userchoosefrom.pack()
+        yrbtn.pack()
+        self.msglabel.pack()
+        self.progress.pack()
+        prompt.wait_window()
+        ret = self.path if self.path != "" else "None"
+        return ret
+
     def loadFileURL(self):
         def disable_event():
             pass
@@ -35,36 +82,95 @@ class file_man():
                 if(not self.is_url(path.get())):
                     alertmsg.set("Please enter a VALID image URL.")
                 else:
-                    self.prompt.destroy()
-                    self.prompt.update()
+                    prompt.destroy()
+                    prompt.update()
 
-        self.prompt = tk.Toplevel()
-        self.prompt.iconbitmap('Bernie.ico')
-        self.prompt.title("Image URL Fetcher")
-        self.prompt.geometry('350x150')
-        self.prompt.resizable(0,0)
-        Cs = tk.Frame(self.prompt, width=200, height=200)
+        prompt = tk.Toplevel()
+        prompt.iconbitmap('Bernie.ico')
+        prompt.title("Image URL Fetcher")
+        prompt.geometry('350x150')
+        prompt.resizable(0,0)
+        Cs = tk.Frame(prompt, width=200, height=200)
         Cs.pack()
         path = tk.StringVar()
         alertmsg = tk.StringVar()
         inputlabel = tk.Label(Cs, text="Enter Image URL:")
         userkeyin = tk.Entry(Cs, textvariable=path)
-        yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro')
-        msglabel = tk.Label(Cs, textvariable=alertmsg, fg ='maroon')
+        yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
+        msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
         inputlabel.pack()
         userkeyin.pack()
         yrbtn.pack()
         msglabel.pack()
-        
-        yrbtn['command'] = chkpath
 #        self.prompt.protocol("WM_DELETE_WINDOW", disable_event)
-        self.prompt.wait_window()
+        prompt.wait_window()
         ret = path.get() if path.get() != "" and self.is_url(path.get()) else "Invalid Input!!!"
         return ret
 
     def loadFileLocal(self):
         file_path = filedialog.askopenfilename()
         return file_path
+
+    def driveDownload(self, id):
+        creds = None
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                creds = flow.run_local_server(port=0)
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
+
+        service = build('drive', 'v3', credentials=creds)
+        request = service.files().get_media(
+            fileId=id,
+            supportsAllDrives=True,
+        )
+        file_metadata = service.files().get(
+            fileId = id,
+            fields="id, name, mimeType, size, parents",
+            supportsAllDrives=True,
+        ).execute()
+        file_mimeType = file_metadata.get("mimeType")
+        final_filename = file_metadata["name"] + file_mimeType
+        with io.FileIO(final_filename, "wb") as fh:
+            self.alertmsg = "start downloading"
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                self.alertmsg = f"{final_filename} Download {status.progress()*100:7.2f}%."
+                #self.progress['value'] = status.progress()*100
+        self.alertmsg = "download complete"
+
+    def is_ImageFile(self, id):
+        supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']
+        creds = None
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                creds = flow.run_local_server(port=0)
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
+
+        service = build('drive', 'v3', credentials=creds)
+        file_metadata = service.files().get(
+            fileId = id,
+            fields="id, name, mimeType, size, parents",
+            supportsAllDrives=True,
+        ).execute()
+    
+        file_mimeType = file_metadata.get("mimeType")
+        return file_mimeType in supported_files
 
     def driveFetch(self):
         creds = None
@@ -78,7 +184,7 @@ class file_man():
                     'credentials.json', SCOPES)
                 creds = flow.run_local_server(port=0)
             with open('token.json', 'w') as token:
-                token.write(creds.to_json())
+                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
 
         service = build('drive', 'v3', credentials=creds)
 

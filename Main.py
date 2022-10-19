@@ -4,5 +4,5 @@ import Classes.FileManager as fm
 u = ui.ui()
 u.open_window()
 #f = fm.file_man()
-#print(f.driveFetch())
+#print(f.is_ImageFile())
 

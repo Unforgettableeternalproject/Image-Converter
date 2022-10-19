@@ -2,7 +2,7 @@
 from os import path
 import tkinter as tk
 from PIL import Image, ImageTk
-from tkinter import filedialog, ttk
+from tkinter import ttk
 from idlelib.tooltip import Hovertip
 import Classes.FileManager as fm
 
@@ -22,6 +22,22 @@ class ui():
     def clear(self):
         self.entryL.delete(1.0, "end")
         self.entryU.delete(1.0, "end")
+        self.btnGD['relief'] = RAISED
+        self.btnGD['state'] = NORMAL
+
+    def openFileGD(self):
+        self.file_path = f.loadFileViaDrive()
+        if(self.file_path != 'None'):
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
+            self.btnGD['relief'] = SUNKEN
+            self.btnGD['state'] = DISABLED
+        else:
+            pass #錯誤訊息視窗
+
 
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
@@ -68,8 +84,9 @@ class ui():
         self.GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
         self.DBicon = ImageTk.PhotoImage(Image.open('Dropbox.png').resize((50,50)))
         self.promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20).place(x=600, y=15)
-        self.btnGD = tk.Button(text="Google Drive", image=self.GDicon).place(x=610, y=60)
+        self.btnGD = tk.Button(text="Google Drive", image=self.GDicon, command=self.openFileGD)
         self.btnDB = tk.Button(text="Dropbox", image = self.DBicon).place(x=680, y=60)
+        self.btnGD.place(x=610, y=60)
         #浮水印(L)
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
         self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)

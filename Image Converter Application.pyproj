@@ -32,6 +32,7 @@
   <ItemGroup>
     <Folder Include="Classes\" />
     <Folder Include="Explanation Files\" />
+    <Folder Include="Cloud Files\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="credentials.json" />
