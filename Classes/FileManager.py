@@ -1,5 +1,4 @@
-﻿from __future__ import print_function
-import os.path, io, time
+﻿import os.path, io, time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -11,9 +10,12 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
+import dropbox
+from dropbox.exceptions import AuthError
 import requests
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtNIFB06BN8YNLJG8RDiJtv_CwtX-s4U_W0mRcpgcmXPK1dvurAXGYcY8r_71oouFdnRIyD1kklEGzk2yVl-DO'
 
 class file_man():
     def __init__(self) -> None:
@@ -223,4 +225,30 @@ class file_man():
         else:
             return items
 
+    def dropboxFetch(self):
+        try:
+            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+        except AuthError as e:
+            print('Error connecting to Dropbox with access token: ' + str(e))
+        try:
+            files = dbx.files_list_folder("", recursive=True).entries[::-1][:10]
+            files_list = []
+            for file in files:
+                if isinstance(file, dropbox.files.FileMetadata):
+                    metadata = {
+                        'name': file.name,
+                        'path_display': file.path_display,
+                        'client_modified': file.client_modified,
+                        'server_modified': file.server_modified
+                    }
+                    files_list.append(metadata)
+
+            #df = pd.DataFrame.from_records(files_list)
+            if not files_list:
+                return "沒有找到任何資料"
+            else:
+                return files_list
+
+        except Exception as e:
+            print('Error getting list of files from Dropbox: ' + str(e))
 
