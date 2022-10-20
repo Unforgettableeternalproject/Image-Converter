@@ -7,6 +7,6 @@ Anyway this is a image converter, pretty cool huh?
 Maybe you can use an image of potato?
 
 git 3 steps:
-1. git add .
-2. git git commit -m "commit message"
-3. git push
+1. ```git add .```
+2. ```git git commit -m "commit message"```
+3. ```git push```

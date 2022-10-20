@@ -11,6 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Image Converter Application</Name>
     <RootNamespace>Image Converter Application</RootNamespace>
+    <InterpreterId>MSBuild|vir_env|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,18 +25,32 @@
     <Compile Include="Classes\EffectProcessor.py" />
     <Compile Include="Classes\PositionProcessor.py" />
     <Compile Include="Classes\FileManager.py" />
+    <Compile Include="Classes\StepRecord.py" />
     <Compile Include="Classes\UserInterface.py" />
     <Compile Include="Main.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Classes\" />
     <Folder Include="Explanation Files\" />
+    <Folder Include="Cloud Files\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="credentials.json" />
     <Content Include="Explanation Files\專案構圖說明.txt" />
     <Content Include="Explanation Files\位置資訊.txt" />
     <Content Include="Explanation Files\圖片轉換器專案架構圖.png" />
     <Content Include="Preview.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="vir_env\">
+      <Id>vir_env</Id>
+      <Version>3.10</Version>
+      <Description>vir_env (Python 3.10 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
