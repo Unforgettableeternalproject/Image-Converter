@@ -6,6 +6,7 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import Classes.FileManager as fm
+import numpy as np
 import cv2
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
@@ -41,6 +42,7 @@ class ui():
         self.entryU.delete(1.0, "end")
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
+        self.updateID('尚未導入!!', '尚未導入!!')
 
     def openFileGD(self):
         self.file_path, self.file_name = f.loadFileViaDrive()
@@ -59,8 +61,9 @@ class ui():
             self.btnGD['state'] = DISABLED
             self.updateID(self.file_name, self.importtype)
         else:
+            self.clear()
             showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            self.sile_path = "None"
+            self.file_path = "None"
         self.updatePic()
 
 
@@ -78,7 +81,6 @@ class ui():
         self.entryU['state'] = DISABLED
         if(self.file_path == ""): 
             self.file_path = "None"
-            self.updateID('尚未導入!!', '尚未導入!!')
         else: 
             self.updateID(self.file_name, self.importtype)
         self.updatePic()
@@ -96,7 +98,6 @@ class ui():
         self.entryU['state'] = DISABLED
         if(self.file_name == "Invalid Input!!!"): 
             self.file_path = "None"
-            self.updateID('尚未導入!!', '尚未導入!!')
         else: self.updateID(self.file_name, self.importtype)
         self.updatePic()
 
@@ -107,18 +108,28 @@ class ui():
         pass
 
     def updatePic(self):
+        def cv_imread(file_path):
+            cv_pic = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
+            return cv_pic
+
         if(self.file_path == "None"):
             img = Image.open('Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         else:
-            openpic = cv2.imread(self.file_path)
+            openpic = cv_imread(self.file_path)
             realpic = Image.open(self.file_path)
-            lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
-            ratio = openpic.shape[0]/openpic.shape[1]
-            if(lside == 'h'):
-                dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
-            else:
-                dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+            print(type(openpic))
+            try:
+                lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
+                ratio = openpic.shape[0]/openpic.shape[1]
+                if(lside == 'h'):
+                    dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
+                else:
+                    dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+            except Exception as e:
+                print(e)
+                self.clear()
+                showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
@@ -219,6 +230,7 @@ class ui():
         self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
         self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
         #圖片預覽(PoI)
+        self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
         img = Image.open('Preview.png')
         tk_img = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         self.preframe = tk.Frame(self.win, width = 440, height = 320).place(x=560, y=220)
