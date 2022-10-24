@@ -131,7 +131,7 @@ class file_man():
         return ret, filename
 
     def loadFileLocal(self):
-        file_path = filedialog.askopenfilename()
+        file_path = filedialog.askopenfilename(filetypes = (("jpeg 檔案","*.jpg"),("png 檔案","*.png*"),("jpg 檔案","*.jpg*")))
         return file_path
 
     def driveDownload(self, id):

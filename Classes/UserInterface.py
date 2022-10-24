@@ -41,18 +41,18 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
+        if(path.exists(self.dlpath)): remove(self.dlpath)
 
     def openFileGD(self):
         self.file_path, file_name = f.loadFileViaDrive()
         if(path.isfile(self.file_path)):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             importtype = "從雲端硬碟導入"
-            if(path.exists(self.dlpath)): remove(self.dlpath)
-            self.file_path = path.realpath(self.file_path)
-            self.dlpath = self.file_path
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
+            self.file_path = path.realpath(self.file_path)
+            self.dlpath = self.file_path
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
@@ -73,7 +73,6 @@ class ui():
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
@@ -89,7 +88,6 @@ class ui():
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.dlpath = self.file_path
         self.entryU.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
@@ -115,10 +113,9 @@ class ui():
             img = Image.open('Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         else:
-            openpic = cv_imread(self.file_path)
-            realpic = Image.open(self.file_path)
-            print(type(openpic))
             try:
+                openpic = cv_imread(self.file_path)
+                realpic = Image.open(self.file_path)
                 lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
                 ratio = openpic.shape[0]/openpic.shape[1]
                 if(lside == 'h'):
@@ -127,6 +124,8 @@ class ui():
                     dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
             except Exception as e:
                 print(e)
+                img = Image.open('Preview.png')
+                dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
                 self.clear()
                 showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
