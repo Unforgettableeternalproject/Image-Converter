@@ -19,22 +19,20 @@ class ui():
         self.align_mode = 'nsew'
         self.pad = 8
         self.file_path = "None"
-        self.file_name = "None"
-        self.importtype = "None"
         self.dlpath = "None"
         pass
 
     def example(self):
         self.file_path = path.realpath('Default Image.png')
-        self.file_name = '範例圖片.png'
-        self.importtype = "範例圖片檔案"
+        file_name = '範例圖片.png'
+        importtype = "範例圖片檔案"
         if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        self.updateID(self.file_name, self.importtype)
+        self.updateID(file_name, importtype)
         self.updatePic()
 
     def clear(self):
@@ -45,10 +43,10 @@ class ui():
         self.updateID('尚未導入!!', '尚未導入!!')
 
     def openFileGD(self):
-        self.file_path, self.file_name = f.loadFileViaDrive()
+        self.file_path, file_name = f.loadFileViaDrive()
         if(path.isfile(self.file_path)):
             showinfo('成功!', '雲端檔案已經成功匯入!')
-            self.importtype = "從雲端硬碟導入"
+            importtype = "從雲端硬碟導入"
             if(path.exists(self.dlpath)): remove(self.dlpath)
             self.file_path = path.realpath(self.file_path)
             self.dlpath = self.file_path
@@ -59,7 +57,7 @@ class ui():
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
-            self.updateID(self.file_name, self.importtype)
+            self.updateID(file_name, importtype)
         else:
             self.clear()
             showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -70,8 +68,8 @@ class ui():
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
         self.file_path = f.loadFileLocal()
-        self.importtype = "從本地端導入"
-        self.file_name = path.basename(self.file_path)
+        importtype = "從本地端導入"
+        file_name = path.basename(self.file_path)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
@@ -82,12 +80,12 @@ class ui():
         if(self.file_path == ""): 
             self.file_path = "None"
         else: 
-            self.updateID(self.file_name, self.importtype)
+            self.updateID(file_name, importtype)
         self.updatePic()
         
     def openFIleU(self):
-        self.file_path, self.file_name = f.loadFileURL()
-        self.importtype = "從URL導入"
+        self.file_path, file_name = f.loadFileURL()
+        importtype = "從URL導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
@@ -96,9 +94,10 @@ class ui():
         self.entryU.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        if(self.file_name == "Invalid Input!!!"): 
+        if(file_name == "Invalid Input!!!"): 
+            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
             self.file_path = "None"
-        else: self.updateID(self.file_name, self.importtype)
+        else: self.updateID(file_name, importtype)
         self.updatePic()
 
     def updateID(self, filename, way):
