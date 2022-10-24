@@ -160,16 +160,15 @@ class file_man():
         ).execute()
         final_filename = file_metadata["name"]
         with io.FileIO(final_filename, "wb") as fh:
-            self.alertmsg = "Start downloading..."
-            self.promptD.update()
+            #self.alertmsg = "Start downloading..."
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-                self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
+                #self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
                 #self.progress['value'] = status.progress()*100
-                self.promptD.update()
-        self.alertmsg = "Download complete"
+                #self.promptD.update()
+        #self.alertmsg = "Download completed!"
         return final_filename
 
     def is_ImageFile(self, id):

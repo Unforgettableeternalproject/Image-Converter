@@ -6,6 +6,7 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import Classes.FileManager as fm
+import cv2
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 f = fm.file_man()
@@ -33,6 +34,7 @@ class ui():
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
         self.updateID(self.file_name, self.importtype)
+        self.updatePic()
 
     def clear(self):
         self.entryL.delete(1.0, "end")
@@ -58,7 +60,8 @@ class ui():
             self.updateID(self.file_name, self.importtype)
         else:
             showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            pass #錯誤訊息視窗
+            self.sile_path = "None"
+        self.updatePic()
 
 
     def openFileL(self):
@@ -76,7 +79,9 @@ class ui():
         if(self.file_path == ""): 
             self.file_path = "None"
             self.updateID('尚未導入!!', '尚未導入!!')
-        else: self.updateID(self.file_name, self.importtype)
+        else: 
+            self.updateID(self.file_name, self.importtype)
+        self.updatePic()
         
     def openFIleU(self):
         self.file_path, self.file_name = f.loadFileURL()
@@ -93,12 +98,30 @@ class ui():
             self.file_path = "None"
             self.updateID('尚未導入!!', '尚未導入!!')
         else: self.updateID(self.file_name, self.importtype)
+        self.updatePic()
 
     def updateID(self, filename, way):
         if(len(filename) > 13): filename = filename[:13] + '...'
         self.imgname['text'] = filename
         self.impway['text'] = way
         pass
+
+    def updatePic(self):
+        if(self.file_path == "None"):
+            img = Image.open('Preview.png')
+            dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+        else:
+            openpic = cv2.imread(self.file_path)
+            realpic = Image.open(self.file_path)
+            lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
+            ratio = openpic.shape[0]/openpic.shape[1]
+            if(lside == 'h'):
+                dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
+            else:
+                dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+        self.preview.imgtk=dispic #換圖片
+        self.preview.config(image=dispic)
+        #Get picture size and scale it with the preview window (420, 300)
 
     def open_window(self):
         #視窗介面
@@ -198,6 +221,7 @@ class ui():
         #圖片預覽(PoI)
         img = Image.open('Preview.png')
         tk_img = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+        self.preframe = tk.Frame(self.win, width = 440, height = 320).place(x=560, y=220)
         self.preview = tk.Label(image=tk_img, width=420, height=300)
         self.preview.place(x=570, y=230)
         #輸出(ExP)

@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Image Converter Application</Name>
     <RootNamespace>Image Converter Application</RootNamespace>
-    <InterpreterId>MSBuild|vir_env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|vir_env4lap|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,6 +42,15 @@
     <Content Include="Preview.png" />
   </ItemGroup>
   <ItemGroup>
+    <Interpreter Include="vir_env4lap\">
+      <Id>vir_env4lap</Id>
+      <Version>3.10</Version>
+      <Description>vir_env4lap (Python 3.10 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
     <Interpreter Include="vir_env\">
       <Id>vir_env</Id>
       <Version>3.10</Version>
