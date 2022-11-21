@@ -145,11 +145,10 @@ class ui():
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
-
+    def ref_effpro(self):
+        pass #Placeholder for hsv process
 
     def open_window(self):
-
-        
         #視窗介面
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
