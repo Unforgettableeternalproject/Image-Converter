@@ -11,11 +11,12 @@ import cv2
 import Classes.EffectProcessor as ep
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
+e = ep.eff_pro()
 f = fm.file_man()
 class ui():
 
     def __init__(self) -> None:
-
+        
         self.win = tk.Tk()
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
@@ -180,11 +181,11 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeH)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, variable=e.h_va, orient=tk.HORIZONTAL, command=e.changeH)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeS)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, variable=e.s_va, orient=tk.HORIZONTAL, command=e.changeS)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeV)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, variable=e.v_va, orient=tk.HORIZONTAL, command=e.changeV)
         self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
