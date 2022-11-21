@@ -42,6 +42,15 @@
     <Content Include="Preview.png" />
   </ItemGroup>
   <ItemGroup>
+    <Interpreter Include="vir_env4lap\">
+      <Id>vir_env4lap</Id>
+      <Version>3.10</Version>
+      <Description>vir_env4lap (Python 3.10 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
     <Interpreter Include="vir_env\">
       <Id>vir_env</Id>
       <Version>3.10</Version>

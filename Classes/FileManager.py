@@ -1,5 +1,4 @@
-﻿from __future__ import print_function
-import os.path, io, time
+﻿import os.path, io, time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -11,9 +10,12 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
+import dropbox
+from dropbox.exceptions import AuthError
 import requests
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtNIFB06BN8YNLJG8RDiJtv_CwtX-s4U_W0mRcpgcmXPK1dvurAXGYcY8r_71oouFdnRIyD1kklEGzk2yVl-DO'
 
 class file_man():
     def __init__(self) -> None:
@@ -24,6 +26,7 @@ class file_man():
 
     def loadFileViaDrive(self):
         def chkpath():
+            
             try:
                 fid = file_id[display.index(file_name.get())]
             except:
@@ -48,8 +51,9 @@ class file_man():
         self.promptD.title("Google Drive File Selector")
         self.promptD.geometry('350x150')
         self.promptD.resizable(0,0)
+        global item_list
         try:       
-            item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗
+            item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗 
             if (len(item_list) == 0): 
                 showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
                 self.promptD.destroy()
@@ -129,7 +133,7 @@ class file_man():
         return ret, filename
 
     def loadFileLocal(self):
-        file_path = filedialog.askopenfilename()
+        file_path = filedialog.askopenfilename(filetypes = (("jpeg 檔案","*.jpg"),("png 檔案","*.png*"),("jpg 檔案","*.jpg*")))
         return file_path
 
     def driveDownload(self, id):
@@ -158,16 +162,15 @@ class file_man():
         ).execute()
         final_filename = file_metadata["name"]
         with io.FileIO(final_filename, "wb") as fh:
-            self.alertmsg = "Start downloading..."
-            self.promptD.update()
+            #self.alertmsg = "Start downloading..."
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-                self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
+                #self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
                 #self.progress['value'] = status.progress()*100
-                self.promptD.update()
-        self.alertmsg = "Download complete"
+                #self.promptD.update()
+        #self.alertmsg = "Download completed!"
         return final_filename
 
     def is_ImageFile(self, id):
@@ -223,4 +226,30 @@ class file_man():
         else:
             return items
 
+    def dropboxFetch(self):
+        try:
+            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+        except AuthError as e:
+            print('Error connecting to Dropbox with access token: ' + str(e))
+        try:
+            files = dbx.files_list_folder("", recursive=True).entries[::-1][:10]
+            files_list = []
+            for file in files:
+                if isinstance(file, dropbox.files.FileMetadata):
+                    metadata = {
+                        'name': file.name,
+                        'path_display': file.path_display,
+                        'client_modified': file.client_modified,
+                        'server_modified': file.server_modified
+                    }
+                    files_list.append(metadata)
+
+            #df = pd.DataFrame.from_records(files_list)
+            if not files_list:
+                return "沒有找到任何資料"
+            else:
+                return files_list
+
+        except Exception as e:
+            print('Error getting list of files from Dropbox: ' + str(e))
 

@@ -6,93 +6,109 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import Classes.FileManager as fm
+import numpy as np
+import cv2
+import Classes.EffectProcessor as ep
 
     #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 f = fm.file_man()
 class ui():
 
     def __init__(self) -> None:
+
         self.win = tk.Tk()
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
         self.file_path = "None"
-        self.file_name = "None"
-        self.importtype = "None"
         self.dlpath = "None"
+        self.createPreview()
         pass
 
     def example(self):
         self.file_path = path.realpath('Default Image.png')
-        self.file_name = '範例圖片.png'
-        self.importtype = "範例圖片檔案"
+        file_name = '範例圖片.png'
+        importtype = "範例圖片檔案"
         if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        self.updateID(self.file_name, self.importtype)
+        self.updateID(file_name, importtype)
+        self.updatePic()
 
     def clear(self):
         self.entryL.delete(1.0, "end")
         self.entryU.delete(1.0, "end")
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
+        self.updateID('尚未導入!!', '尚未導入!!')
+        if(path.exists(self.dlpath)): remove(self.dlpath)
 
     def openFileGD(self):
-        self.file_path, self.file_name = f.loadFileViaDrive()
+        self.file_path, file_name = f.loadFileViaDrive()
         if(path.isfile(self.file_path)):
             showinfo('成功!', '雲端檔案已經成功匯入!')
-            self.importtype = "從雲端硬碟導入"
-            if(path.exists(self.dlpath)): remove(self.dlpath)
-            self.file_path = path.realpath(self.file_path)
-            self.dlpath = self.file_path
+            importtype = "從雲端硬碟導入"
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
+            self.file_path = path.realpath(self.file_path)
+            self.dlpath = self.file_path
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
-            self.updateID(self.file_name, self.importtype)
+            self.updateID(file_name, importtype)
         else:
+            self.clear()
             showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            pass #錯誤訊息視窗
+            self.file_path = "None"
+        self.updatePic()
 
-
+    def createPreview(self):
+        original = cv2.imread("Default Preview.png")
+        cv2.imwrite("Preview.png", original)       
+            
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
         self.file_path = f.loadFileLocal()
-        self.importtype = "從本地端導入"
-        self.file_name = path.basename(self.file_path)
+        importtype = "從本地端導入"
+        file_name = path.basename(self.file_path)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
+        
         if(self.file_path == ""): 
             self.file_path = "None"
-            self.updateID('尚未導入!!', '尚未導入!!')
-        else: self.updateID(self.file_name, self.importtype)
+        else: 
+            image = cv2.imread(self.file_path)
+            cv2.imwrite("Preview.png", image)
+            self.updateID(file_name, importtype)
+        self.updatePic()
         
     def openFIleU(self):
-        self.file_path, self.file_name = f.loadFileURL()
-        self.importtype = "從URL導入"
+        self.file_path, file_name = f.loadFileURL()
+        importtype = "從URL導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.dlpath = self.file_path
         self.entryU.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        if(self.file_name == "Invalid Input!!!"): 
+        if(file_name == "Invalid Input!!!"): 
+            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
             self.file_path = "None"
-            self.updateID('尚未導入!!', '尚未導入!!')
-        else: self.updateID(self.file_name, self.importtype)
+        else: 
+            self.updateID(file_name, importtype)
+            image = cv2.imread(self.file_path)
+            cv2.imwrite("Preview.png", image)
+        self.updatePic()
 
     def updateID(self, filename, way):
         if(len(filename) > 13): filename = filename[:13] + '...'
@@ -100,7 +116,40 @@ class ui():
         self.impway['text'] = way
         pass
 
+    def updatePic(self):
+        def cv_imread(file_path):
+            cv_pic = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
+            return cv_pic
+        
+        
+        if(self.file_path == "None"):
+            img = Image.open('Preview.png')
+            dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+        else:
+            try:
+
+                openpic = cv_imread("Preview.png")
+                realpic = Image.open("Preview.png")
+                lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
+                ratio = openpic.shape[0]/openpic.shape[1]
+                if(lside == 'h'):
+                    dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
+                else:
+                    dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+            except Exception as e:
+                print(e)
+                img = Image.open('Preview.png')
+                dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+                self.clear()
+                showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
+        self.preview.imgtk=dispic #換圖片
+        self.preview.config(image=dispic)
+        #Get picture size and scale it with the preview window (420, 300)
+
+
     def open_window(self):
+
+        
         #視窗介面
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
@@ -132,9 +181,12 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=1, to=360, length=200, orient=tk.HORIZONTAL).place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=50, y=230)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeH)
+        self.H_slider.place(x=50, y=150)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeS)
+        self.S_slider.place(x=50, y=190)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeV)
+        self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
         self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
@@ -196,13 +248,15 @@ class ui():
         self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
         self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
         #圖片預覽(PoI)
+        self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
         img = Image.open('Preview.png')
         tk_img = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
+        self.preframe = tk.Frame(self.win, width = 440, height = 320).place(x=560, y=220)
         self.preview = tk.Label(image=tk_img, width=420, height=300)
         self.preview.place(x=570, y=230)
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
-        self.localS = tk.Button(text="下載至電腦", height=2, width=20).place(x=30, y=480)
+        self.localS = tk.Button(text="儲存至電腦", height=2, width=20).place(x=30, y=480)
         self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20)
         self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
         self.cloudS.place(x=200, y=480)
