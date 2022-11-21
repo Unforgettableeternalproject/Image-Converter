@@ -26,6 +26,7 @@ class file_man():
 
     def loadFileViaDrive(self):
         def chkpath():
+            
             try:
                 fid = file_id[display.index(file_name.get())]
             except:
@@ -50,8 +51,9 @@ class file_man():
         self.promptD.title("Google Drive File Selector")
         self.promptD.geometry('350x150')
         self.promptD.resizable(0,0)
+        global item_list
         try:       
-            item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗
+            item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗 
             if (len(item_list) == 0): 
                 showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
                 self.promptD.destroy()
