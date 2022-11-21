@@ -127,9 +127,8 @@ class ui():
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         else:
             try:
-
-                openpic = cv_imread("Preview.png")
-                realpic = Image.open("Preview.png")
+                openpic = cv_imread(self.file_path)
+                realpic = Image.open(self.file_path)
                 lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
                 ratio = openpic.shape[0]/openpic.shape[1]
                 if(lside == 'h'):

@@ -10,8 +10,6 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
-import dropbox
-from dropbox.exceptions import AuthError
 import requests
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -225,31 +223,3 @@ class file_man():
             return "沒有找到任何資料"
         else:
             return items
-
-    def dropboxFetch(self):
-        try:
-            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
-        except AuthError as e:
-            print('Error connecting to Dropbox with access token: ' + str(e))
-        try:
-            files = dbx.files_list_folder("", recursive=True).entries[::-1][:10]
-            files_list = []
-            for file in files:
-                if isinstance(file, dropbox.files.FileMetadata):
-                    metadata = {
-                        'name': file.name,
-                        'path_display': file.path_display,
-                        'client_modified': file.client_modified,
-                        'server_modified': file.server_modified
-                    }
-                    files_list.append(metadata)
-
-            #df = pd.DataFrame.from_records(files_list)
-            if not files_list:
-                return "沒有找到任何資料"
-            else:
-                return files_list
-
-        except Exception as e:
-            print('Error getting list of files from Dropbox: ' + str(e))
-
