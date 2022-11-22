@@ -10,7 +10,7 @@ class eff_pro():
         image = cv2.imread("Preview.png")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        newH = UI.ui.H_slider.get()
+        newH = UI.H
 
         image[:, :, 0] = newH
 
@@ -22,9 +22,7 @@ class eff_pro():
     def changeS(event):
         image = cv2.imread("Preview.png")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        newS = UI.ui.S_slider.get()
-            
-        UI.ui.S_slider.set(image[:, :, 1])
+        newS = UI.S
             
         image[:, :, 1] = newS
 
@@ -36,9 +34,7 @@ class eff_pro():
     def changeV(event):
         image = cv2.imread("Preview.png")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        newV = UI.ui.V_slider.get()
-
-        UI.ui.V_slider.set(image[:, :, 2])
+        newV = UI.V
 
         image[:, :, 2] = newV
 
