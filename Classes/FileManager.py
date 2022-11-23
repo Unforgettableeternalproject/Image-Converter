@@ -253,3 +253,4 @@ class file_man():
         except Exception as e:
             print('Error getting list of files from Dropbox: ' + str(e))
 
+f = file_man()

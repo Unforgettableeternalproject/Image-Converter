@@ -5,17 +5,12 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
-import Classes.FileManager as fm
+import FileManager as fm
 import numpy as np
 import cv2
-import Classes.EffectProcessor as ep
+import EffectProcessor as EP
+#tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 
-H = 0
-S = 0
-V = 0
-
-    #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
-f = fm.file_man()
 class ui():
 
     def __init__(self) -> None:
@@ -26,6 +21,7 @@ class ui():
         self.pad = 8
         self.file_path = "None"
         self.dlpath = "None"
+        self.textvariable = 0
         self.createPreview()
         pass
 
@@ -51,7 +47,7 @@ class ui():
         if(path.exists(self.dlpath)): remove(self.dlpath)
 
     def openFileGD(self):
-        self.file_path, file_name = f.loadFileViaDrive()
+        self.file_path, file_name = fm.f.loadFileViaDrive()
         if(path.isfile(self.file_path)):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             importtype = "從雲端硬碟導入"
@@ -77,7 +73,7 @@ class ui():
             
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
-        self.file_path = f.loadFileLocal()
+        self.file_path = fm.f.loadFileLocal()
         importtype = "從本地端導入"
         file_name = path.basename(self.file_path)
         self.entryL['state'] = NORMAL
@@ -96,7 +92,7 @@ class ui():
         self.updatePic()
         
     def openFIleU(self):
-        self.file_path, file_name = f.loadFileURL()
+        self.file_path, file_name = fm.f.loadFileURL()
         importtype = "從URL導入"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
@@ -152,8 +148,7 @@ class ui():
 
 
     def open_window(self):
-
-        
+  
         #視窗介面
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
@@ -185,22 +180,27 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeH, variable=H)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeS, variable=S)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=ep.eff_pro.changeV, variable=V)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
         self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
             #侵蝕、膨脹的部分
-        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7).place(x=50, y=280)
-        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7).place(x=50, y=330)
+        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=EP.ep.erode)
+        self.erodebtn.place(x=50, y=280)
+        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=EP.ep.dilate)
+        self.dilatebtn.place(x=50, y=330)
         self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
-        self.edvalue = tk.Entry(width=4, state=DISABLED).place(x=200, y=344)
-        self.openingck = tk.Checkbutton(text="去白點").place(x=125, y=285)
-        self.closingck = tk.Checkbutton(text="去黑點").place(x=195, y=285)
+        self.edvalue = tk.Entry(width=4, state=DISABLED)
+        self.edvalue.place(x=200, y=344)
+        self.openingck = tk.Checkbutton(text="去白點", command=EP.ep.opening)
+        self.openingck.place(x=125, y=285)
+        self.closingck = tk.Checkbutton(text="去黑點", command=EP.ep.closing)
+        self.closingck.place(x=195, y=285)
         self.gradientck = tk.Checkbutton(text="只顯示輪廓").place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
@@ -296,5 +296,5 @@ class ui():
         #運行程式
         self.win.mainloop()
 
-
+ui = ui()
 
