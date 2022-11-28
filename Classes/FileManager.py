@@ -11,6 +11,7 @@ from tkinter import filedialog, ttk
 import tkinter.colorchooser as cc
 from urllib.parse import urlparse
 import requests
+from PIL import Image
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtNIFB06BN8YNLJG8RDiJtv_CwtX-s4U_W0mRcpgcmXPK1dvurAXGYcY8r_71oouFdnRIyD1kklEGzk2yVl-DO'
@@ -18,6 +19,21 @@ DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtN
 class file_man():
     def __init__(self) -> None:
         pass
+
+    def saveFileLocal(self):
+        im = Image.open('Preview.png')
+        if im.mode != "RGBA":
+            im = im.convert("RGBA")
+        txt = Image.new('RGBA', im.size, (255,255,255,0))
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("png 檔案", "*.png"),("jpg 檔案","*.jpg"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
+        if file:
+            tpe = 'png'
+            if('.jpg' in file.name): tpe = 'jpg'
+            if('.jpeg' in file.name): tpe = 'jpeg'
+            if('.bmp' in file.name): tpe = 'bmp'
+            abs_path = os.path.abspath(file.name)
+            out = Image.alpha_composite(im, txt)
+            out.save(abs_path, tpe) # saves the image to the input file name. 
 
     def loadFileViaDropbox(self):
         pass
@@ -131,7 +147,7 @@ class file_man():
         return ret, filename
 
     def loadFileLocal(self):
-        file_path = filedialog.askopenfilename(filetypes = (("jpeg 檔案","*.jpg"),("png 檔案","*.png*"),("jpg 檔案","*.jpg*")))
+        file_path = filedialog.askopenfilename(filetypes = (("png 檔案","*.png*"),("jpg 檔案","*.jpg"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
         return file_path
 
     def driveDownload(self, id):

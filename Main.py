@@ -1,4 +1,5 @@
 ﻿import sys, os
+from tkinter import filedialog
 
 def checkReqPackages():
     with open("requirements.txt", mode = "r", encoding = "utf-8") as file:
@@ -12,7 +13,6 @@ def checkReqPackages():
 
 import Classes.UserInterface as ui
 import Classes.FileManager as fm
-
 
 
 u = ui.ui()

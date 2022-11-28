@@ -26,6 +26,15 @@ class ui():
         self.createPreview()
         pass
 
+    def save(self):
+        try:
+            f.saveFileLocal()
+            self.createPreview()
+            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存!')
+        except Exception as e:
+            print(e)
+            showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+
     def example(self):
         self.file_path = path.realpath('Default Image.png')
         file_name = '範例圖片.png'
@@ -64,7 +73,7 @@ class ui():
             self.updateID(file_name, importtype)
         else:
             self.clear()
-            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
+            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
             self.file_path = "None"
         self.updatePic()
 
@@ -103,7 +112,7 @@ class ui():
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
         if(file_name == "Invalid Input!!!"): 
-            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
+            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
             self.file_path = "None"
         else: 
             self.updateID(file_name, importtype)
@@ -180,11 +189,11 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, variable=e.h_va, orient=tk.HORIZONTAL, command=e.changeH)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=e.changeH)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, variable=e.s_va, orient=tk.HORIZONTAL, command=e.changeS)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=e.changeS)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, variable=e.v_va, orient=tk.HORIZONTAL, command=e.changeV)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=e.changeV)
         self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
@@ -255,7 +264,7 @@ class ui():
         self.preview.place(x=570, y=230)
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
-        self.localS = tk.Button(text="儲存至電腦", height=2, width=20).place(x=30, y=480)
+        self.localS = tk.Button(text="儲存至電腦", height=2, width=20, command=self.save).place(x=30, y=480)
         self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20)
         self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
         self.cloudS.place(x=200, y=480)
