@@ -29,7 +29,6 @@ class ui():
     def save(self):
         try:
             f.saveFileLocal()
-            self.createPreview()
             showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存!')
         except Exception as e:
             print(e)

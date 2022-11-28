@@ -22,18 +22,13 @@ class file_man():
 
     def saveFileLocal(self):
         im = Image.open('Preview.png')
-        if im.mode != "RGBA":
-            im = im.convert("RGBA")
-        txt = Image.new('RGBA', im.size, (255,255,255,0))
-        file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("png 檔案", "*.png"),("jpg 檔案","*.jpg"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("png 檔案", "*.png"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
         if file:
             tpe = 'png'
-            if('.jpg' in file.name): tpe = 'jpg'
             if('.jpeg' in file.name): tpe = 'jpeg'
             if('.bmp' in file.name): tpe = 'bmp'
             abs_path = os.path.abspath(file.name)
-            out = Image.alpha_composite(im, txt)
-            out.save(abs_path, tpe) # saves the image to the input file name. 
+            im.save(abs_path, tpe) # saves the image to the input file name. 
 
     def loadFileViaDropbox(self):
         pass
