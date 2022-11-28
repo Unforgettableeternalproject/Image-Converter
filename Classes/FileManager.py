@@ -108,14 +108,16 @@ class file_man():
                 alertmsg.set("Trying to download...")
                 promptD.update()
                 try:
-                    self.path = self.driveDownload(fid)
+                    msg, self.cpath = self.driveDownload(fid)
+                    print(self.cpath)
+                    alertmsg.set(msg)
                     promptD.update()
                     promptD.destroy()
                 except Exception:
                     msglabel['fg'] = 'maroon'
                     alertmsg.set("Unknown error occured, please try another file.")
 
-        self.path = tk.StringVar()
+        self.cpath = tk.StringVar()
         promptD = tk.Toplevel()
         promptD.iconbitmap('Bernie.ico')
         promptD.title("Google Drive File Selector")
@@ -145,8 +147,8 @@ class file_man():
         yrbtn.pack()
         msglabel.pack()
         promptD.wait_window()
-        ret = self.path if self.path != "" else "None"
-        return str(ret), file_name.get()
+        ret = self.cpath if self.cpath != "" else "None"
+        return str(ret), str(ret)
 
     def loadFileURL(self):
         supported_files = ['.jpg', '.png', '.jpeg', '.bmp', '.webp', '.heic']
@@ -196,7 +198,7 @@ class file_man():
         yrbtn.pack()
         msglabel.pack()
         prompt.wait_window()
-        filename = "url_image" + self.mimetype if self.mimetype != '' else "Invalid Input!!!"
+        filename = "url_img" + self.mimetype if self.mimetype != '' else "Invalid Input!!!"
         ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
         return ret, filename
 
@@ -222,18 +224,15 @@ class file_man():
             fields="id, name, mimeType, size, parents",
             supportsAllDrives=True,
         ).execute()
-        final_filename = file_metadata["name"]
+        mp = {'image/jpg':'.jpg', 'image/png':'.png', 'image/jpeg':'.jpeg', 'image/bmp':'.bmp', 'image/webp':'.webp', 'image/heic':'.heic'}
+        final_filename = 'cloud_img' + mp[file_metadata['mimeType']]
         with io.FileIO(final_filename, "wb") as fh:
             #self.alertmsg = "Start downloading..."
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-                #self.alertmsg = f"{final_filename} Downloading {status.progress()*100:7.2f}%."
-                #self.progress['value'] = status.progress()*100
-                #self.promptD.update()
-        #self.alertmsg = "Download completed!"
-        return final_filename
+        return "Download completed!", final_filename
 
     def is_ImageFile(self, id):
         supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']

@@ -93,6 +93,12 @@ class ui():
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
+            image = cv2.imread(self.file_path)
+            try:
+                cv2.imwrite("Preview.png", image)
+            except:
+                print('Failed!')
+                self.createPreview()
             self.updateID(file_name, importtype)
         else:
             self.clear()
