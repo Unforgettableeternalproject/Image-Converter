@@ -1,23 +1,24 @@
-﻿import os.path, io, time
+﻿from multiprocessing.pool import IMapUnorderedIterator
+import os.path, io
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from tkinter.constants import *
 from tkinter.messagebox import *    
 import tkinter as tk
 from tkinter import filedialog, ttk
-import tkinter.colorchooser as cc
 from urllib.parse import urlparse
 import requests
 from PIL import Image
 
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+SCOPES = ['https://www.googleapis.com/auth/drive.file','https://www.googleapis.com/auth/drive.readonly']
 DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtNIFB06BN8YNLJG8RDiJtv_CwtX-s4U_W0mRcpgcmXPK1dvurAXGYcY8r_71oouFdnRIyD1kklEGzk2yVl-DO'
 
 class file_man():
     def __init__(self) -> None:
+        self.creds = None
         pass
 
     def saveFileLocal(self):
@@ -30,6 +31,66 @@ class file_man():
             abs_path = os.path.abspath(file.name)
             im.save(abs_path, tpe) # saves the image to the input file name. 
 
+    def saveFileCloud(self):
+        mimty = 'image/png'
+        def uploadFile(mimty):
+            file_metadata = {
+            'name': name.get(),
+            'mimeType': mimty
+            }
+            media = MediaFileUpload('Preview.png',
+                                    mimetype=mimty,
+                                    resumable=True)
+            service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+       
+        def setvariables():
+            if not name.get():
+                alertmsg.set("Please enter a file name!!")
+                print('no')
+            else:
+                if(typsel.get() == 'png 檔案'): mimty = 'image/png'
+                if(typsel.get() == 'jpeg 檔案'): mimty = 'image/jpeg'
+                if(typsel.get() == 'bmp 檔案'): mimty = 'image/bmp'
+                try:
+                    uploadFile(mimty)
+                    promptD2.update()
+                    promptD2.destroy()
+                except Exception as e:
+                    print(e)
+            pass
+
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                self.creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                self.creds = flow.run_local_server(port=0)
+
+        service = build('drive', 'v3', credentials=self.creds)
+        
+        name = tk.StringVar()
+        alertmsg = tk.StringVar()
+        promptD2 = tk.Toplevel()
+        promptD2.iconbitmap('Bernie.ico')
+        promptD2.title("Google Drive File Uploader")
+        promptD2.geometry('350x150')
+        promptD2.resizable(0,0)
+        Cs = tk.Frame(promptD2, width=200, height=200)
+        Cs.pack()
+        inputlabel = tk.Label(Cs, text="Enter your file name and type:")
+        entry = tk.Entry(Cs, textvariable=name)
+        typsel = ttk.Combobox(Cs, width=17, state="readonly", value=['png 檔案', 'jpeg 檔案', 'bmp 檔案'])
+        typsel.current(0)
+        button = tk.Button(Cs, text="Submit", width=20, bg='lightslategrey', fg='gainsboro', command=setvariables)
+        msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
+        inputlabel.pack()
+        entry.pack()
+        typsel.pack()
+        button.pack()
+        msglabel.pack()
+        promptD2.wait_window()
+
     def loadFileViaDropbox(self):
         pass
 
@@ -41,51 +102,49 @@ class file_man():
             except:
                 fid = ''
             if (file_name.get() == "" or not self.is_ImageFile(fid)):
-                self.alertmsg.set("The file was not an image.")
+                alertmsg.set("The file was not an image.")
             else:
-                self.msglabel['fg'] = 'forestgreen'
-                self.alertmsg.set("Trying to download...")
-                self.promptD.update()
+                msglabel['fg'] = 'forestgreen'
+                alertmsg.set("Trying to download...")
+                promptD.update()
                 try:
                     self.path = self.driveDownload(fid)
-                    self.promptD.update()
-                    self.promptD.destroy()
+                    promptD.update()
+                    promptD.destroy()
                 except Exception:
-                    self.msglabel['fg'] = 'maroon'
-                    self.alertmsg.set("Unknown error occured, please try another file.")
+                    msglabel['fg'] = 'maroon'
+                    alertmsg.set("Unknown error occured, please try another file.")
 
         self.path = tk.StringVar()
-        self.promptD = tk.Toplevel()
-        self.promptD.iconbitmap('Bernie.ico')
-        self.promptD.title("Google Drive File Selector")
-        self.promptD.geometry('350x150')
-        self.promptD.resizable(0,0)
+        promptD = tk.Toplevel()
+        promptD.iconbitmap('Bernie.ico')
+        promptD.title("Google Drive File Selector")
+        promptD.geometry('350x150')
+        promptD.resizable(0,0)
         global item_list
         try:       
             item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗 
             if (len(item_list) == 0): 
                 showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
-                self.promptD.destroy()
+                promptD.destroy()
         except:
             showerror('檔案錯誤', '存取雲端硬碟時出現錯誤!')
-            self.promptD.destroy()
+            promptD.destroy()
         display = [x['name'] for x in item_list]
         file_id = [x['id'] for x in item_list]
-        Cs = tk.Frame(self.promptD, width=200, height=200)
+        Cs = tk.Frame(promptD, width=200, height=200)
         Cs.pack()
         file_name = tk.StringVar()
-        self.alertmsg = tk.StringVar()
+        alertmsg = tk.StringVar()
         inputlabel = tk.Label(Cs, text="Choose a file from below (Must be an image):")
         userchoosefrom = ttk.Combobox(Cs, textvariable=file_name, width=17, state="readonly", value=display)
         yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
-        self.msglabel = tk.Label(Cs, textvariable=self.alertmsg, fg='maroon')
-        self.progress = ttk.Progressbar(Cs, length=200, mode='determinate')
+        msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
         inputlabel.pack()
         userchoosefrom.pack()
         yrbtn.pack()
-        self.msglabel.pack()
-        self.progress.pack()
-        self.promptD.wait_window()
+        msglabel.pack()
+        promptD.wait_window()
         ret = self.path if self.path != "" else "None"
         return str(ret), file_name.get()
 
@@ -146,20 +205,14 @@ class file_man():
         return file_path
 
     def driveDownload(self, id):
-        creds = None
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     'credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
-
-        service = build('drive', 'v3', credentials=creds)
+                self.creds = flow.run_local_server(port=0)
+        service = build('drive', 'v3', credentials=self.creds)
         request = service.files().get_media(
             fileId=id,
             supportsAllDrives=True,
@@ -184,20 +237,14 @@ class file_man():
 
     def is_ImageFile(self, id):
         supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']
-        creds = None
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     'credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
-
-        service = build('drive', 'v3', credentials=creds)
+                self.creds = flow.run_local_server(port=0)
+        service = build('drive', 'v3', credentials=self.creds)
         try:
             file_metadata = service.files().get(
             fileId = id,
@@ -211,20 +258,14 @@ class file_man():
             return False
 
     def driveFetch(self):
-        creds = None
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     'credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json()) #這裡之後會改，但為了測試我先用我的就好
-
-        service = build('drive', 'v3', credentials=creds)
+                self.creds = flow.run_local_server(port=0)
+        service = build('drive', 'v3', credentials=self.creds)
 
         results = service.files().list(
             pageSize=10, fields="nextPageToken, files(id, name)").execute()

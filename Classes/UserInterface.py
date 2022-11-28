@@ -26,13 +26,37 @@ class ui():
         self.createPreview()
         pass
 
-    def save(self):
+    def saveL(self):
         try:
             f.saveFileLocal()
-            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存!')
+            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
         except Exception as e:
             print(e)
             showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+
+    def saveC(self):
+        try:
+            f.saveFileCloud()
+            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
+        except Exception as e:
+            print(e)
+            showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+
+    def resetall(self):
+        ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
+        print(ans)
+        if(ans):
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
+            self.file_path = "None"
+            self.createPreview()
+            self.updatePic()
+            if(path.exists(self.dlpath)): remove(self.dlpath)
+            self.dlpath = "None"
+        else: pass #Not Yet Done
 
     def example(self):
         self.file_path = path.realpath('Default Image.png')
@@ -96,8 +120,13 @@ class ui():
             self.file_path = "None"
         else: 
             image = cv2.imread(self.file_path)
-            cv2.imwrite("Preview.png", image)
-            self.updateID(file_name, importtype)
+            try:
+                cv2.imwrite("Preview.png", image)
+                self.updateID(file_name, importtype)
+            except:
+                self.createPreview()
+                self.clear()
+                showerror('匯入失敗!', '檔案可能有問題，請再試一次。')
         self.updatePic()
         
     def openFIleU(self):
@@ -153,8 +182,6 @@ class ui():
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
-    def ref_effpro(self):
-        pass #Placeholder for hsv process
 
     def open_window(self):
         #視窗介面
@@ -263,8 +290,8 @@ class ui():
         self.preview.place(x=570, y=230)
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
-        self.localS = tk.Button(text="儲存至電腦", height=2, width=20, command=self.save).place(x=30, y=480)
-        self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20)
+        self.localS = tk.Button(text="儲存至電腦", height=2, width=20, command=self.saveL).place(x=30, y=480)
+        self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20, command = self.saveC)
         self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
         self.cloudS.place(x=200, y=480)
         self.mails = tk.Button(text="寄送給他人", height=2, width=20).place(x=370, y=480)
@@ -275,7 +302,7 @@ class ui():
         self.win.config(menu=self.menu)
         self.file = tk.Menu(self.menu, tearoff=0)
         self.file.add_command(label='顯示範例', command=self.example) #程式中顯示範例圖片檔的預覽
-        self.file.add_command(label='完全重置', foreground='red') #跳出視窗顯示警告，並詢問是否真的要重置
+        self.file.add_command(label='完全重置', foreground='red', command=self.resetall) #跳出視窗顯示警告，並詢問是否真的要重置
 
         self.window = tk.Menu(self.menu, tearoff=0)
         self.window.add_command(label='步驟紀錄') #跳出新視窗，顯示步驟紀錄
