@@ -7,6 +7,7 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Image Converter Application
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項目", "{C4E99723-EFFA-4D0D-99CC-D42F75F2094C}"
 	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
 		requirements.txt = requirements.txt
 	EndProjectSection
 EndProject
