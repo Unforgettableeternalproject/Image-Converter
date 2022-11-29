@@ -143,6 +143,7 @@ class ui():
             self.file_path = "None"
         else: 
             image = cv2.imread(self.file_path)
+            print(self.file_path)
             try:
                 cv2.imwrite("Preview.png", image)
                 self.updateID(file_name, importtype)
@@ -166,9 +167,14 @@ class ui():
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
             self.file_path = "None"
         else: 
-            self.updateID(file_name, importtype)
             image = cv2.imread(self.file_path)
-            cv2.imwrite("Preview.png", image)
+            try:
+                cv2.imwrite("Preview.png", image)
+                self.updateID(file_name, importtype)
+            except:
+                self.createPreview()
+                self.clear()
+                showerror('匯入失敗!', '檔案可能有問題，請再試一次。')
         self.updatePic()
 
     def updateID(self, filename, way):

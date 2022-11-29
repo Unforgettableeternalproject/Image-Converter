@@ -54,9 +54,9 @@ class file_man():
             else:
                 if(not subject.get('1.0', 'end-1c') or not content.get('1.0', 'end-1c')):
                     ans = askyesno('您有資料沒有填寫!', '您有主旨或內容並沒有填寫，要繼續寄送嗎?', icon = 'warning')
-                    if(ans): print('Wow, I sent it!')#send()
+                    if(ans): send()
                     else: pass
-                else: print('Wow, I sent it!')#send()
+                else: send()
             pass
         mail_to = tk.StringVar()
         alertmsg = tk.StringVar()
@@ -211,7 +211,7 @@ class file_man():
 
     def loadFileURL(self):
         supported_files = ['.jpg', '.png', '.jpeg', '.bmp', '.webp', '.heic']
-        self.mimetype = ''
+        ftype = ''
         filename = ''
         def is_url(url):
             try:
@@ -221,6 +221,7 @@ class file_man():
                 return False
 
         def chkpath():
+            global ftype
             if(path.get() == ""):
                 alertmsg.set("Please enter a image URL.")
             else:
@@ -229,12 +230,13 @@ class file_man():
                 else:
                     for i in supported_files:
                         if(i in path.get()):
-                            self.mimetype = i
+                            ftype = i
                             break
-                    if self.mimetype != '':
+                    if ftype != '':
                         img_data = requests.get(path.get()).content
-                        with open("url_image" + self.mimetype, "wb") as handler:
-                            handler.write(img_data)
+                        with open("url_image" + ftype, "wb") as handler:
+                            handler.write(img_data) 
+                        print(ftype)
                         prompt.destroy()
                         prompt.update()
                     else: alertmsg.set("Please enter a VALID image URL.")
@@ -257,7 +259,8 @@ class file_man():
         yrbtn.pack()
         msglabel.pack()
         prompt.wait_window()
-        filename = "url_img" + self.mimetype if self.mimetype != '' else "Invalid Input!!!"
+        print(ftype)
+        filename = "url_img" + ftype if ftype != '' else "Invalid Input!!!"
         ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
         return ret, filename
 
