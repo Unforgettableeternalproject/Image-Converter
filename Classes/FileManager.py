@@ -1,5 +1,7 @@
-﻿import os.path, io, smtplib
+﻿import os.path, io, smtplib, re
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -23,24 +25,60 @@ class file_man():
         pass
 
     def sendFileViaMail(self):
-        try:
-            content = ''
-            subject = ''
-            mail_to = ''
-            msg = MIMEText(content, 'plain', 'utf-8')
-            msg['Subject'] = subject
-            msg['From'] = DEFAULT_MAIL_ADRESS
-            msg['To'] = mail_to
+        def send():
+            try:
+                msg = MIMEMultipart()
+                info = MIMEText(content.get('1.0', 'end-1c').strip(), 'plain', 'utf-8')
+                msg.attach(info)
+                with open('Preview.png', 'rb') as fp:
+                    img = MIMEImage(fp.read())
+                msg.attach(img)
+                msg['Subject'] = subject.get('1.0', 'end-1c').strip()
+                msg['From'] = DEFAULT_MAIL_ADRESS
+                msg['To'] = mail_to.get()
 
-            server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-            server.ehlo()
-            server.login(DEFAULT_MAIL_ADRESS, DEFAULT__MAIL_TOKEN)
-            server.send_message(msg)
-            server.quit()
-        except Exception as e:
-            print(e)
-            showerror("發生錯誤!", "寄送時發生錯誤，請稍後再試.")
-        pass
+                server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server.ehlo()
+                server.login(DEFAULT_MAIL_ADRESS, DEFAULT__MAIL_TOKEN)
+                server.send_message(msg)
+                server.quit()
+            except Exception as e:
+                print(e)
+                showerror("發生錯誤!", "寄送時發生錯誤，可能是電子郵件地址並不存在，請稍後再試.")
+            promptM.update()
+            promptM.destroy()
+        def verify():
+            regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+            if(not re.fullmatch(regex, mail_to.get())):
+                alertmsg.set("Please enter a valid email adress!")
+            else:
+                if(not subject.get('1.0', 'end-1c') or not content.get('1.0', 'end-1c')):
+                    ans = askyesno('您有資料沒有填寫!', '您有主旨或內容並沒有填寫，要繼續寄送嗎?', icon = 'warning')
+                    if(ans): print('Wow, I sent it!')#send()
+                    else: pass
+                else: print('Wow, I sent it!')#send()
+            pass
+        mail_to = tk.StringVar()
+        alertmsg = tk.StringVar()
+        promptM = tk.Toplevel()
+        promptM.iconbitmap('Bernie.ico')
+        promptM.title("Image Sender")
+        promptM.geometry('500x500')
+        promptM.resizable(0,0)
+        Cs = tk.Frame(promptM, width=200, height=200)
+        Cs.pack()
+        t = 50
+        display = tk.Label(promptM, text="Mail To:").place(x=60, y=48+t)
+        sub_display = tk.Label(promptM, text="Subject:").place(x=60, y=83+t)
+        con_display = tk.Label(promptM, text='Content:\n(Image\nincluded!)').place(x=56, y=160+t)
+        mail = tk.Entry(promptM, textvariable=mail_to, width=40).place(x=130, y=50+t)
+        subject = tk.Text(promptM, width=40, height=2)
+        content = tk.Text(promptM, width=40, height=10)
+        button = tk.Button(promptM, text="Confirm and Send", width=40, bg='lightslategrey', fg='gainsboro', command=verify).place(x=100, y=280+t)
+        msglabel = tk.Label(promptM, textvariable=alertmsg, fg='maroon').place(x=130, y=20+t)
+        subject.place(x=130, y=80+t)
+        content.place(x=130, y=120+t)
+        promptM.wait_window()
 
     def saveFileLocal(self):
         im = Image.open('Preview.png')

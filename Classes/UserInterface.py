@@ -26,21 +26,38 @@ class ui():
         self.createPreview()
         pass
 
+    def sendM(self):
+        if self.file_path != "None":
+            try:
+                f.sendFileViaMail()
+                showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
+            except Exception as e:
+                print(e)
+                showerror('寄送失敗!', '發生未知的錯誤導致寄送失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
+
     def saveL(self):
-        try:
-            f.saveFileLocal()
-            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
-        except Exception as e:
-            print(e)
-            showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        if self.file_path != "None":
+            try:
+                f.saveFileLocal()
+                showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
+            except Exception as e:
+                print(e)
+                showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveC(self):
-        try:
-            f.saveFileCloud()
-            showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
-        except Exception as e:
-            print(e)
-            showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        if self.file_path != "None":
+            try:
+                f.saveFileCloud()
+                showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
+            except Exception as e:
+                print(e)
+                showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
@@ -300,7 +317,7 @@ class ui():
         self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20, command = self.saveC)
         self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
         self.cloudS.place(x=200, y=480)
-        self.mails = tk.Button(text="寄送給他人", height=2, width=20).place(x=370, y=480)
+        self.mails = tk.Button(text="寄送給他人", height=2, width=20, command=self.sendM).place(x=370, y=480)
 
         #菜單
         self.menu = tk.Menu()

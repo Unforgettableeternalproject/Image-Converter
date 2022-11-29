@@ -1,5 +1,4 @@
 ﻿import sys, os
-from tkinter import filedialog
 
 def checkReqPackages():
     with open("requirements.txt", mode = "r", encoding = "utf-8") as file:
@@ -19,6 +18,5 @@ u = ui.ui()
 u.open_window()
 
 #f = fm.file_man()
-#file = f.dropboxFetch()
-#for i in file: print(i)
+#f.sendFileViaMail()
 
