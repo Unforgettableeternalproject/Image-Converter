@@ -1,9 +1,8 @@
-﻿from multiprocessing.pool import IMapUnorderedIterator
-import os.path, io
+﻿import os.path, io, smtplib
+from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from tkinter.constants import *
 from tkinter.messagebox import *    
@@ -15,10 +14,32 @@ from PIL import Image
 
 SCOPES = ['https://www.googleapis.com/auth/drive.file','https://www.googleapis.com/auth/drive.readonly']
 DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtNIFB06BN8YNLJG8RDiJtv_CwtX-s4U_W0mRcpgcmXPK1dvurAXGYcY8r_71oouFdnRIyD1kklEGzk2yVl-DO'
+DEFAULT_MAIL_ADRESS = 'ptyc4076@gmail.com'
+DEFAULT__MAIL_TOKEN = 'yvjzdurxghiehhbv'
 
 class file_man():
     def __init__(self) -> None:
         self.creds = None
+        pass
+
+    def sendFileViaMail(self):
+        try:
+            content = ''
+            subject = ''
+            mail_to = ''
+            msg = MIMEText(content, 'plain', 'utf-8')
+            msg['Subject'] = subject
+            msg['From'] = DEFAULT_MAIL_ADRESS
+            msg['To'] = mail_to
+
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+            server.ehlo()
+            server.login(DEFAULT_MAIL_ADRESS, DEFAULT__MAIL_TOKEN)
+            server.send_message(msg)
+            server.quit()
+        except Exception as e:
+            print(e)
+            showerror("發生錯誤!", "寄送時發生錯誤，請稍後再試.")
         pass
 
     def saveFileLocal(self):
