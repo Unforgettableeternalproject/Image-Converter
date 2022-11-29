@@ -25,6 +25,7 @@ class file_man():
         pass
 
     def sendFileViaMail(self):
+        self.vaild = False
         def send():
             try:
                 msg = MIMEMultipart()
@@ -42,6 +43,7 @@ class file_man():
                 server.login(DEFAULT_MAIL_ADRESS, DEFAULT__MAIL_TOKEN)
                 server.send_message(msg)
                 server.quit()
+                self.vaild = True
             except Exception as e:
                 print(e)
                 showerror("發生錯誤!", "寄送時發生錯誤，可能是電子郵件地址並不存在，請稍後再試.")
@@ -79,6 +81,7 @@ class file_man():
         subject.place(x=130, y=80+t)
         content.place(x=130, y=120+t)
         promptM.wait_window()
+        return self.vaild
 
     def saveFileLocal(self):
         im = Image.open('Preview.png')
@@ -89,9 +92,12 @@ class file_man():
             if('.bmp' in file.name): tpe = 'bmp'
             abs_path = os.path.abspath(file.name)
             im.save(abs_path, tpe) # saves the image to the input file name. 
+            return True
+        else: return False
 
     def saveFileCloud(self):
         mimty = 'image/png'
+        self.vaild = False
         def uploadFile(mimty):
             file_metadata = {
             'name': name.get(),
@@ -101,6 +107,7 @@ class file_man():
                                     mimetype=mimty,
                                     resumable=True)
             service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            self.vaild = True
        
         def setvariables():
             if not name.get():
@@ -149,13 +156,14 @@ class file_man():
         button.pack()
         msglabel.pack()
         promptD2.wait_window()
+        return self.vaild
 
     def loadFileViaDropbox(self):
         pass
 
     def loadFileViaDrive(self):
+        self.vaild = False
         def chkpath():
-            
             try:
                 fid = file_id[display.index(file_name.get())]
             except:
@@ -167,11 +175,11 @@ class file_man():
                 alertmsg.set("Trying to download...")
                 promptD.update()
                 try:
-                    msg, self.cpath = self.driveDownload(fid)
-                    print(self.cpath)
+                    msg = self.driveDownload(fid)
                     alertmsg.set(msg)
                     promptD.update()
                     promptD.destroy()
+                    self.vaild = True
                 except Exception:
                     msglabel['fg'] = 'maroon'
                     alertmsg.set("Unknown error occured, please try another file.")
@@ -206,13 +214,11 @@ class file_man():
         yrbtn.pack()
         msglabel.pack()
         promptD.wait_window()
-        ret = self.cpath if self.cpath != "" else "None"
-        return str(ret), str(ret)
+        return self.vaild
 
     def loadFileURL(self):
         supported_files = ['.jpg', '.png', '.jpeg', '.bmp', '.webp', '.heic']
-        ftype = ''
-        filename = ''
+        self.vaild = False
         def is_url(url):
             try:
                 result = urlparse(url)
@@ -221,22 +227,25 @@ class file_man():
                 return False
 
         def chkpath():
-            global ftype
             if(path.get() == ""):
                 alertmsg.set("Please enter a image URL.")
             else:
                 if(not is_url(path.get())):
                     alertmsg.set("Please enter a VALID image URL.")
                 else:
+                    ftype = ''
                     for i in supported_files:
                         if(i in path.get()):
                             ftype = i
                             break
                     if ftype != '':
-                        img_data = requests.get(path.get()).content
-                        with open("url_image" + ftype, "wb") as handler:
-                            handler.write(img_data) 
-                        print(ftype)
+                        try:
+                            img_data = requests.get(path.get()).content
+                            with open("Preview.png", "wb") as handler:
+                                handler.write(img_data) 
+                            self.vaild = True
+                        except:
+                            pass
                         prompt.destroy()
                         prompt.update()
                     else: alertmsg.set("Please enter a VALID image URL.")
@@ -259,10 +268,10 @@ class file_man():
         yrbtn.pack()
         msglabel.pack()
         prompt.wait_window()
-        print(ftype)
-        filename = "url_img" + ftype if ftype != '' else "Invalid Input!!!"
-        ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
-        return ret, filename
+        #print(ftype)
+        ##filename = "url_img" + ftype if ftype != '' else "Invalid Input!!!"
+        #ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
+        return self.vaild, path.get()
 
     def loadFileLocal(self):
         file_path = filedialog.askopenfilename(filetypes = (("png 檔案","*.png*"),("jpg 檔案","*.jpg"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
@@ -287,14 +296,15 @@ class file_man():
             supportsAllDrives=True,
         ).execute()
         mp = {'image/jpg':'.jpg', 'image/png':'.png', 'image/jpeg':'.jpeg', 'image/bmp':'.bmp', 'image/webp':'.webp', 'image/heic':'.heic'}
-        final_filename = 'cloud_img' + mp[file_metadata['mimeType']]
+        #final_filename = 'cloud_img' + mp[file_metadata['mimeType']]
+        final_filename = 'Preview.png'
         with io.FileIO(final_filename, "wb") as fh:
             #self.alertmsg = "Start downloading..."
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-        return "Download completed!", final_filename
+        return "Download completed!"
 
     def is_ImageFile(self, id):
         supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']

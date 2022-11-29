@@ -16,21 +16,20 @@ f = fm.file_man()
 class ui():
 
     def __init__(self) -> None:
-        
+        self.vaild = False
         self.win = tk.Tk()
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
-        self.file_path = "None"
-        self.dlpath = "None"
         self.createPreview()
         pass
 
     def sendM(self):
-        if self.file_path != "None":
+        if(self.vaild):
             try:
-                f.sendFileViaMail()
-                showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
+                flag = f.sendFileViaMail()
+                if(flag): showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
+                else: pass
             except Exception as e:
                 print(e)
                 showerror('寄送失敗!', '發生未知的錯誤導致寄送失敗，我們深感抱歉!')
@@ -38,10 +37,11 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveL(self):
-        if self.file_path != "None":
+        if(self.vaild):
             try:
-                f.saveFileLocal()
-                showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
+                flag = f.saveFileLocal()
+                if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
+                else: pass
             except Exception as e:
                 print(e)
                 showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
@@ -49,10 +49,11 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveC(self):
-        if self.file_path != "None":
+        if(self.vaild):
             try:
-                f.saveFileCloud()
-                showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
+                flag = f.saveFileCloud()
+                if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
+                else: pass
             except Exception as e:
                 print(e)
                 showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
@@ -68,18 +69,16 @@ class ui():
             self.clear()
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
-            self.file_path = "None"
             self.createPreview()
             self.updatePic()
-            if(path.exists(self.dlpath)): remove(self.dlpath)
-            self.dlpath = "None"
+            self.vaild = False
         else: pass #Not Yet Done
 
     def example(self):
-        self.file_path = path.realpath('Default Image.png')
+        image = cv2.imread('Default Image.png')
+        cv2.imwrite("Preview.png", image)
         file_name = '範例圖片.png'
         importtype = "範例圖片檔案"
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
@@ -94,58 +93,49 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
-        if(path.exists(self.dlpath)): remove(self.dlpath)
 
     def openFileGD(self):
-        self.file_path, file_name = f.loadFileViaDrive()
-        if(path.isfile(self.file_path)):
+        self.tvaild = f.loadFileViaDrive()
+        if(self.tvaild):
             showinfo('成功!', '雲端檔案已經成功匯入!')
+            file_name = 'cloud_img.png'
             importtype = "從雲端硬碟導入"
+            self.vaild = True
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
-            self.file_path = path.realpath(self.file_path)
-            self.dlpath = self.file_path
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
-            image = cv2.imread(self.file_path)
-            try:
-                cv2.imwrite("Preview.png", image)
-            except:
-                print('Failed!')
-                self.createPreview()
             self.updateID(file_name, importtype)
         else:
-            self.clear()
+            pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            self.file_path = "None"
         self.updatePic()
 
     def createPreview(self):
+        self.vaild = False
         original = cv2.imread("Default Preview.png")
         cv2.imwrite("Preview.png", original)       
             
     def openFileL(self):
-        # msg = "Hello, {}.".format(entry.get())
-        self.file_path = f.loadFileLocal()
-        importtype = "從本地端導入"
-        file_name = path.basename(self.file_path)
-        self.entryL['state'] = NORMAL
-        self.entryU['state'] = NORMAL
-        self.clear()
-        self.entryL.insert("insert", self.file_path)
-        self.entryL['state'] = DISABLED
-        self.entryU['state'] = DISABLED
-        
-        if(self.file_path == ""): 
-            self.file_path = "None"
+        file_path = f.loadFileLocal()
+        file_name = path.basename(file_path)
+        if(file_path == ""):
+            pass
         else: 
-            image = cv2.imread(self.file_path)
-            print(self.file_path)
             try:
+                image = cv2.imdecode(np.fromfile(file_path,dtype=np.uint8), cv2.IMREAD_COLOR)
                 cv2.imwrite("Preview.png", image)
+                importtype = "從本地端導入"
+                self.vaild = True
+                self.entryL['state'] = NORMAL
+                self.entryU['state'] = NORMAL
+                self.clear()
+                self.entryL.insert("insert", file_path)
+                self.entryL['state'] = DISABLED
+                self.entryU['state'] = DISABLED
                 self.updateID(file_name, importtype)
             except:
                 self.createPreview()
@@ -154,27 +144,21 @@ class ui():
         self.updatePic()
         
     def openFIleU(self):
-        self.file_path, file_name = f.loadFileURL()
-        importtype = "從URL導入"
-        self.entryL['state'] = NORMAL
-        self.entryU['state'] = NORMAL
-        self.clear()
-        self.dlpath = self.file_path
-        self.entryU.insert("insert", self.file_path)
-        self.entryL['state'] = DISABLED
-        self.entryU['state'] = DISABLED
-        if(file_name == "Invalid Input!!!"): 
-            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            self.file_path = "None"
+        self.tvaild, url = f.loadFileURL()
+        if(self.tvaild): 
+            file_name = 'url_image.png'
+            importtype = "從URL導入" 
+            self.vaild = True
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryU.insert("insert", url)
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
+            self.updateID(file_name, importtype)
         else: 
-            image = cv2.imread(self.file_path)
-            try:
-                cv2.imwrite("Preview.png", image)
-                self.updateID(file_name, importtype)
-            except:
-                self.createPreview()
-                self.clear()
-                showerror('匯入失敗!', '檔案可能有問題，請再試一次。')
+            pass
+            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
 
     def updateID(self, filename, way):
@@ -187,27 +171,21 @@ class ui():
         def cv_imread(file_path):
             cv_pic = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
             return cv_pic
-        
-        
-        if(self.file_path == "None"):
-            img = Image.open('Preview.png')
+        try:
+            openpic = cv_imread('Preview.png')
+            realpic = Image.open('Preview.png')
+            lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
+            ratio = openpic.shape[0]/openpic.shape[1]
+            if(lside == 'h'):
+                dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
+            else:
+                dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+        except Exception as e:
+            print(e)
+            img = Image.open('Default Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
-        else:
-            try:
-                openpic = cv_imread(self.file_path)
-                realpic = Image.open(self.file_path)
-                lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
-                ratio = openpic.shape[0]/openpic.shape[1]
-                if(lside == 'h'):
-                    dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
-                else:
-                    dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
-            except Exception as e:
-                print(e)
-                img = Image.open('Preview.png')
-                dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
-                self.clear()
-                showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
+            self.clear()
+            showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
