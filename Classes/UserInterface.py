@@ -157,7 +157,6 @@ class ui():
             self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
         else: 
-            pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
 
