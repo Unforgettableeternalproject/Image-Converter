@@ -245,7 +245,7 @@ class ui():
         promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20)
         self.btnGD = tk.Button(text="Google Drive", image=GDicon, command=self.openFileGD)
         self.sva = tk.StringVar()
-        self.sva.set('Network Status: ' + "Online" if self.status else "Offline")
+        self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
         self.dstatus = tk.Label(textvariable = self.sva, fg="green")
         if(not self.status): self.dstatus['fg'] = "red"
         promptC.place(x=600, y=15)
