@@ -26,6 +26,13 @@ class file_man():
 
     def sendFileViaMail(self):
         self.vaild = False
+        def quit():
+            if(not mail_to.get() and not subject.get('1.0', 'end-1c') and not content.get('1.0', 'end-1c')):
+                promptM.destroy()
+            else:
+                ans = askyesno("結束寄送程序?", "您的郵件尚未寄送，如果結束則不會儲存你的變更，是否要結束?", icon='warning')
+                if(ans): promptM.destroy()
+                else: pass
         def send():
             try:
                 msg = MIMEMultipart()
@@ -80,6 +87,7 @@ class file_man():
         msglabel = tk.Label(promptM, textvariable=alertmsg, fg='maroon').place(x=130, y=20+t)
         subject.place(x=130, y=80+t)
         content.place(x=130, y=120+t)
+        promptM.protocol("WM_DELETE_WINDOW", quit)
         promptM.wait_window()
         return self.vaild
 
@@ -157,9 +165,6 @@ class file_man():
         msglabel.pack()
         promptD2.wait_window()
         return self.vaild
-
-    def loadFileViaDropbox(self):
-        pass
 
     def loadFileViaDrive(self):
         self.vaild = False

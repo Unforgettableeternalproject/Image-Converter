@@ -24,6 +24,11 @@ class ui():
         self.createPreview()
         pass
 
+    def quit(self):
+        ans = askyesno("結束程式", "你確定要離開了嗎? (Bernie會想你的)")
+        if(ans): self.win.destroy()
+        else: pass
+
     def sendM(self):
         if(self.vaild):
             try:
@@ -62,7 +67,6 @@ class ui():
 
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
-        print(ans)
         if(ans):
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
@@ -208,11 +212,9 @@ class ui():
         self.entryU.place(x=150, y=80)
         #雲端導入方式(CI)
         self.GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
-        self.DBicon = ImageTk.PhotoImage(Image.open('Dropbox.png').resize((50,50)))
         self.promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20).place(x=600, y=15)
         self.btnGD = tk.Button(text="Google Drive", image=self.GDicon, command=self.openFileGD)
-        self.btnDB = tk.Button(text="Dropbox", image = self.DBicon).place(x=680, y=60)
-        self.btnGD.place(x=610, y=60)
+        self.btnGD.place(x=645, y=60)
         #浮水印(L)
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
         self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)
@@ -330,6 +332,7 @@ class ui():
         self.menu.add_cascade(label='顯示', menu=self.view)
         self.menu.add_cascade(label='幫助', menu=self.help)
         #運行程式
+        self.win.protocol("WM_DELETE_WINDOW", self.quit)
         self.win.mainloop()
 
 
