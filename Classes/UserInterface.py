@@ -38,10 +38,10 @@ class ui():
         else: pass
 
     def sendM(self):
-        if(not self.status):
-            showerror('沒有連線!', '你尚未連線到網際網路!')
-            return None
         if(self.vaild):
+            if(not self.status):
+                showerror('沒有連線!', '你尚未連線到網際網路!')
+                return None
             try:
                 flag = f.sendFileViaMail()
                 if(flag): showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
@@ -65,10 +65,10 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveC(self):
-        if(not self.status):
-            showerror('沒有連線!', '你尚未連線到網際網路!')
-            return None
         if(self.vaild):
+            if(not self.status):
+                showerror('沒有連線!', '你尚未連線到網際網路!')
+                return None
             try:
                 flag = f.saveFileCloud()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
