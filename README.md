@@ -16,6 +16,12 @@ Contributors:
 	samtto22-MewCat
 	wakaba0972
 
+To-do list:
+	UserInterface:
+		Close the top-levels when reset
+		Handlement when OAuth verification window is accidentally closed
+		Optimizaion for image resize
+
 Preserved for future check: git 3 steps
 1. ```git add .```
 2. ```git git commit -m "commit message"```

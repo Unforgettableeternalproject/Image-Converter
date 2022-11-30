@@ -5,12 +5,12 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
+import requests
 import Classes.FileManager as fm
 import numpy as np
 import cv2
-import Classes.EffectProcessor as ep
+import Classes.EffectProcessor as ep    
 
-    #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 e = ep.eff_pro()
 f = fm.file_man()
 class ui():
@@ -22,7 +22,15 @@ class ui():
         self.align_mode = 'nsew'
         self.pad = 8
         self.createPreview()
+        self.status = self.chknet()
         pass
+
+    def chknet(self):
+        try:
+            requests.get('https://www.google.com',timeout=10)
+            return True
+        except (requests.ConnectionError, requests.Timeout):
+            return False
 
     def quit(self):
         ans = askyesno("結束程式", "你確定要離開了嗎? (Bernie會想你的)")
@@ -30,6 +38,9 @@ class ui():
         else: pass
 
     def sendM(self):
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
         if(self.vaild):
             try:
                 flag = f.sendFileViaMail()
@@ -54,6 +65,9 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveC(self):
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
         if(self.vaild):
             try:
                 flag = f.saveFileCloud()
@@ -76,6 +90,10 @@ class ui():
             self.createPreview()
             self.updatePic()
             self.vaild = False
+            self.status = self.chknet()
+            self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
+            if(not self.status): self.dstatus['fg'] = "red"
+            else: self.dstatus['fg'] = 'green'
         else: pass #Not Yet Done
 
     def example(self):
@@ -88,6 +106,7 @@ class ui():
         self.clear()
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
+        self.vaild = True
         self.updateID(file_name, importtype)
         self.updatePic()
 
@@ -97,8 +116,16 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
+        
+    def createPreview(self):
+        self.vaild = False
+        original = cv2.imread("Default Preview.png")
+        cv2.imwrite("Preview.png", original)       
 
     def openFileGD(self):
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
         self.tvaild = f.loadFileViaDrive()
         if(self.tvaild):
             showinfo('成功!', '雲端檔案已經成功匯入!')
@@ -117,11 +144,6 @@ class ui():
             pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
-
-    def createPreview(self):
-        self.vaild = False
-        original = cv2.imread("Default Preview.png")
-        cv2.imwrite("Preview.png", original)       
             
     def openFileL(self):
         file_path = f.loadFileLocal()
@@ -148,6 +170,9 @@ class ui():
         self.updatePic()
         
     def openFIleU(self):
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
         self.tvaild, url = f.loadFileURL()
         if(self.tvaild): 
             file_name = 'url_image.png'
@@ -161,7 +186,8 @@ class ui():
             self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
         else: 
-            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
+            if(not url): pass 
+            else: showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
 
     def updateID(self, filename, way):
@@ -201,23 +227,34 @@ class ui():
         self.win.iconbitmap('Bernie.ico')
 
         #本地檔案導入方式(LII)
-        self.promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=27)
+        promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15)
         self.entryL = tk.Text(height=2, width=45, state="disabled")
-        self.btnL = tk.Button(text="...", height=1, width=4, command=self.openFileL).place(x=485, y=32)
+        btnL = tk.Button(text="...", height=1, width=4, command=self.openFileL)
         self.entryL.place(x=150, y=30)
+        promptL.place(x=25, y=27)
+        btnL.place(x=485, y=32)
         #網路檔案導入方式(IUI)
-        self.promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=77)
+        promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15)
         self.entryU = tk.Text(height=2, width=45, state="disabled")
-        self.btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU).place(x=485, y=82)
+        btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU)
         self.entryU.place(x=150, y=80)
+        promptU.place(x=25, y=77)
+        btnU.place(x=485, y=82)
         #雲端導入方式(CI)
-        self.GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
-        self.promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20).place(x=600, y=15)
-        self.btnGD = tk.Button(text="Google Drive", image=self.GDicon, command=self.openFileGD)
+        GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
+        promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20)
+        self.btnGD = tk.Button(text="Google Drive", image=GDicon, command=self.openFileGD)
+        self.sva = tk.StringVar()
+        self.sva.set('Network Status: ' + "Online" if self.status else "Offline")
+        self.dstatus = tk.Label(textvariable = self.sva, fg="green")
+        if(not self.status): self.dstatus['fg'] = "red"
+        promptC.place(x=600, y=15)
+        self.dstatus.place(x=810, y=3)
         self.btnGD.place(x=645, y=60)
         #浮水印(L)
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
-        self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)
+        label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25)
+        label.place(x=810, y=25)
         #效果處理器(EP)
             #HSV滑桿的部分
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
