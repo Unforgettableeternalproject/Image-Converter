@@ -10,13 +10,10 @@ def checkReqPackages():
             else:
                 print("{} is already installed".format(packageName))
 
-import Classes.UserInterface as ui
-import Classes.FileManager as fm
+import UserInterface as UI
+import FileManager as fm
 
-
-
-u = ui.ui()
-u.open_window()
+UI.ui.open_window()
 
 #f = fm.file_man()
 #file = f.dropboxFetch()
