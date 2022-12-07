@@ -6,13 +6,12 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import requests
-import Classes.FileManager as fm
+import FileManager as fm
 import numpy as np
 import cv2
-import Classes.EffectProcessor as ep    
+import EffectProcessor as EP
+#tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
 
-e = ep.eff_pro()
-f = fm.file_man()
 class ui():
 
     def __init__(self) -> None:
@@ -21,6 +20,7 @@ class ui():
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
+        self.textvariable = 0
         self.createPreview()
         self.status = self.chknet()
         pass
@@ -173,7 +173,7 @@ class ui():
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild, url = f.loadFileURL()
+        self.tvaild, url = fm.f.loadFileURL()
         if(self.tvaild): 
             file_name = 'url_image.png'
             importtype = "從URL導入" 
@@ -260,22 +260,27 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=e.changeH)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=e.changeS)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=e.changeV)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
         self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
             #侵蝕、膨脹的部分
-        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7).place(x=50, y=280)
-        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7).place(x=50, y=330)
+        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=EP.ep.erode)
+        self.erodebtn.place(x=50, y=280)
+        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=EP.ep.dilate)
+        self.dilatebtn.place(x=50, y=330)
         self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
-        self.edvalue = tk.Entry(width=4, state=DISABLED).place(x=200, y=344)
-        self.openingck = tk.Checkbutton(text="去白點").place(x=125, y=285)
-        self.closingck = tk.Checkbutton(text="去黑點").place(x=195, y=285)
+        self.edvalue = tk.Entry(width=4, state=DISABLED)
+        self.edvalue.place(x=200, y=344)
+        self.openingck = tk.Checkbutton(text="去白點", command=EP.ep.opening)
+        self.openingck.place(x=125, y=285)
+        self.closingck = tk.Checkbutton(text="去黑點", command=EP.ep.closing)
+        self.closingck.place(x=195, y=285)
         self.gradientck = tk.Checkbutton(text="只顯示輪廓").place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
@@ -372,5 +377,5 @@ class ui():
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
         self.win.mainloop()
 
-
+ui = ui()
 
