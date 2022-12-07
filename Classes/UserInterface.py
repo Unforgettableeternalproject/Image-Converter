@@ -6,15 +6,17 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import requests
-import FileManager as FM
+import Classes.FileManager as FM
 import numpy as np
 import cv2
-import EffectProcessor as EP
+import Classes.EffectProcessor as EP
 #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
-
+f = FM.file_man()
+e = EP.ep()
 class ui():
 
     def __init__(self) -> None:
+        self.original = None
         self.vaild = False
         self.win = tk.Tk()
         self.basepath = path.dirname(path.realpath(__file__))
@@ -43,7 +45,7 @@ class ui():
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
             try:
-                flag = FM.fm.sendFileViaMail()
+                flag = f.sendFileViaMail()
                 if(flag): showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
                 else: pass
             except Exception as e:
@@ -55,7 +57,7 @@ class ui():
     def saveL(self):
         if(self.vaild):
             try:
-                flag = FM.fm.saveFileLocal()
+                flag = f.saveFileLocal()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
                 else: pass
             except Exception as e:
@@ -70,7 +72,7 @@ class ui():
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
             try:
-                flag = FM.fm.saveFileCloud()
+                flag = f.saveFileCloud()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
                 else: pass
             except Exception as e:
@@ -119,14 +121,21 @@ class ui():
         
     def createPreview(self):
         self.vaild = False
-        original = cv2.imread("Default Preview.png")
-        cv2.imwrite("Preview.png", original)       
+        og = cv2.imread("Default Preview.png")
+        cv2.imwrite("Preview.png", og)    
+        
+    def accessOriginal(self, mode):
+        if(mode == 'Set'):
+            self.original = cv2.imread("Preview.png")
+            return None
+        if(mode == 'Get'):
+            return self.original
 
     def openFileGD(self):
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild = FM.fm.loadFileViaDrive()
+        self.tvaild = f.loadFileViaDrive()
         if(self.tvaild):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             file_name = 'cloud_img.png'
@@ -146,7 +155,7 @@ class ui():
         self.updatePic()
             
     def openFileL(self):
-        file_path = FM.fm.loadFileLocal()
+        file_path = f.loadFileLocal()
         file_name = path.basename(file_path)
         if(file_path == ""):
             pass
@@ -173,7 +182,7 @@ class ui():
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild, url = FM.fm.loadFileURL()
+        self.tvaild, url = f.loadFileURL()
         if(self.tvaild): 
             file_name = 'url_image.png'
             importtype = "從URL導入" 
@@ -220,6 +229,48 @@ class ui():
         #Get picture size and scale it with the preview window (420, 300)
 
     def open_window(self):
+        def hsv(event):
+            e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
+            self.updatePic()
+        def erode():
+            e.erode()
+            self.updatePic()
+        def dilate():
+            e.dilate()
+            self.updatePic()
+        def opening():
+            if(b1.get()):
+                self.accessOriginal('Set')
+                e.opening()
+                self.gradientck['state'] = 'disabled'
+                self.closingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.gradientck['state'] = 'normal'
+                self.closingck['state'] = 'normal'
+            self.updatePic()
+        def closing():
+            if(b2.get()):
+                self.accessOriginal('Set')
+                e.closing()
+                self.gradientck['state'] = 'disabled'
+                self.openingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.gradientck['state'] = 'normal'
+                self.openingck['state'] = 'normal'
+            self.updatePic()
+        def gradient():
+            if(b3.get()):
+                self.accessOriginal('Set')
+                e.gradient()
+                self.openingck['state'] = 'disabled'
+                self.closingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.openingck['state'] = 'normal'
+                self.closingck['state'] = 'normal'
+            self.updatePic()
         #視窗介面
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
@@ -260,28 +311,30 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.V_slider.place(x=50, y=230)
         self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
         self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
         self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
             #侵蝕、膨脹的部分
-        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=EP.ep.erode)
+        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=erode)
         self.erodebtn.place(x=50, y=280)
-        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=EP.ep.dilate)
+        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=dilate)
         self.dilatebtn.place(x=50, y=330)
         self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
         self.edvalue = tk.Entry(width=4, state=DISABLED)
         self.edvalue.place(x=200, y=344)
-        self.openingck = tk.Checkbutton(text="去白點", command=EP.ep.opening)
+        b1 = tk.BooleanVar(); b2 = tk.BooleanVar(); b3 = tk.BooleanVar()
+        self.openingck = tk.Checkbutton(text="去白點", variable=b1, command=opening)
         self.openingck.place(x=125, y=285)
-        self.closingck = tk.Checkbutton(text="去黑點", command=EP.ep.closing)
+        self.closingck = tk.Checkbutton(text="去黑點", variable=b2, command=closing)
         self.closingck.place(x=195, y=285)
-        self.gradientck = tk.Checkbutton(text="只顯示輪廓").place(x=148, y=310)
+        self.gradientck = tk.Checkbutton(text="只顯示輪廓", variable=b3, command=gradient)
+        self.gradientck.place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
         self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"]).place(x=85, y=385)
@@ -376,6 +429,4 @@ class ui():
         #運行程式
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
         self.win.mainloop()
-
-ui = ui()
 

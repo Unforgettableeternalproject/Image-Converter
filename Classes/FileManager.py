@@ -351,4 +351,3 @@ class file_man():
             return "沒有找到任何資料"
         else:
             return items
-fm = file_man()
