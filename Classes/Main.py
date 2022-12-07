@@ -11,11 +11,10 @@ def checkReqPackages():
                 print("{} is already installed".format(packageName))
 
 import UserInterface as UI
-import FileManager as fm
+import FileManager as FM
 
 UI.ui.open_window()
 
 #f = fm.file_man()
-#file = f.dropboxFetch()
-#for i in file: print(i)
+#f.sendFileViaMail()
 

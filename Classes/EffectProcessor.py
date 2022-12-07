@@ -1,9 +1,12 @@
-﻿from PIL import Image,ImageDraw,ImageFont
+﻿import tkinter as tk
+from PIL import Image,ImageDraw,ImageFont
 import cv2
 import UserInterface as UI
 import numpy as np
 
 class ep():
+    def __init__(self) -> None:
+        pass
     
     def changeHSV(self, event):
         image = cv2.imread("Preview.png")
