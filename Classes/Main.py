@@ -11,7 +11,7 @@ def checkReqPackages():
                 print("{} is already installed".format(packageName))
 
 import UserInterface as UI
-import FileManager as fm
+import FileManager as FM
 
 UI.ui.open_window()
 

@@ -6,7 +6,7 @@ from tkinter import ttk
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import requests
-import FileManager as fm
+import FileManager as FM
 import numpy as np
 import cv2
 import EffectProcessor as EP
@@ -43,7 +43,7 @@ class ui():
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
             try:
-                flag = f.sendFileViaMail()
+                flag = FM.fm.sendFileViaMail()
                 if(flag): showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
                 else: pass
             except Exception as e:
@@ -55,7 +55,7 @@ class ui():
     def saveL(self):
         if(self.vaild):
             try:
-                flag = f.saveFileLocal()
+                flag = FM.fm.saveFileLocal()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
                 else: pass
             except Exception as e:
@@ -70,7 +70,7 @@ class ui():
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
             try:
-                flag = f.saveFileCloud()
+                flag = FM.fm.saveFileCloud()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
                 else: pass
             except Exception as e:
@@ -126,7 +126,7 @@ class ui():
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild = f.loadFileViaDrive()
+        self.tvaild = FM.fm.loadFileViaDrive()
         if(self.tvaild):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             file_name = 'cloud_img.png'
@@ -146,7 +146,7 @@ class ui():
         self.updatePic()
             
     def openFileL(self):
-        file_path = f.loadFileLocal()
+        file_path = FM.fm.loadFileLocal()
         file_name = path.basename(file_path)
         if(file_path == ""):
             pass
@@ -173,7 +173,7 @@ class ui():
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild, url = fm.f.loadFileURL()
+        self.tvaild, url = FM.fm.loadFileURL()
         if(self.tvaild): 
             file_name = 'url_image.png'
             importtype = "從URL導入" 
