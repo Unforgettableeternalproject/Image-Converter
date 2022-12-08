@@ -84,13 +84,13 @@ class ui():
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
         if(ans):
+            self.createPreview()
+            self.updatePic()
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
-            self.createPreview()
-            self.updatePic()
             self.vaild = False
             self.status = self.chknet()
             self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
@@ -118,6 +118,9 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
+        self.display['state'] = 'normal'
+        self.display.delete(1.0, "end")
+        self.display['state'] = 'disabled'
         
     def createPreview(self):
         self.vaild = False
@@ -218,6 +221,9 @@ class ui():
                 dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
             else:
                 dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+            self.display['state'] = 'normal'
+            self.display.insert("insert", str(openpic.shape[0]) + ' x ' + str(openpic.shape[1]))
+            self.display['state'] = 'disabled'
         except Exception as e:
             print(e)
             img = Image.open('Default Preview.png')
@@ -342,7 +348,8 @@ class ui():
         self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
         #尺寸動態顯示(SD)
         self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=150)
-        self.display = tk.Text(height=1, width=15, state="disabled").place(x=325, y=173)
+        self.display = tk.Text(height=1, width=15, state="disabled")
+        self.display.place(x=325, y=173)
         #方位處理器(PP)
             #縮放的部分
         self.fixedscale = tk.Checkbutton(text="固定比例")

@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Image Converter Application</Name>
     <RootNamespace>Image Converter Application</RootNamespace>
-    <InterpreterId>MSBuild|vir_env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|vir_env4lap|$(MSBuildProjectFullPath)</InterpreterId>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
