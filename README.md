@@ -1,4 +1,4 @@
-![image](https://github.com/Unforgettableeternalproject/Image-Converter/blob/file_path_enhanced/Snapshot.png)
+![image](https://github.com/Unforgettableeternalproject/Image-Converter/blob/master/Snapshot.png)
 
 "Do you want to build a python application?"
 "Or you can have a potato, I guess."
