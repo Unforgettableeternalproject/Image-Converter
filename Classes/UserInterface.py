@@ -3,6 +3,7 @@ from os import path, remove
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
+import tkinter.font as tkFont
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import FileManager as fm
@@ -16,6 +17,10 @@ class ui():
     def __init__(self) -> None:
 
         self.win = tk.Tk()
+        self.defaultFont = tkFont.Font(root=self.win, name="TkDefaultFont", exists=True)
+        self.defaultFont.configure(family="Microsoft YaHei",
+                                   size=7,
+                                   weight=tkFont.NORMAL)
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
@@ -68,8 +73,8 @@ class ui():
         self.updatePic()
 
     def createPreview(self):
-        original = cv2.imread("Default Preview.png")
-        cv2.imwrite("Preview.png", original)       
+        original = cv2.imread("Image-Converter/Default Preview.png")
+        cv2.imwrite("Image-Converter/Preview.png", original)       
             
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
@@ -87,7 +92,7 @@ class ui():
             self.file_path = "None"
         else: 
             image = cv2.imread(self.file_path)
-            cv2.imwrite("Preview.png", image)
+            cv2.imwrite("Image-Converter/Preview.png", image)
             self.updateID(file_name, importtype)
         self.updatePic()
         
@@ -107,7 +112,7 @@ class ui():
         else: 
             self.updateID(file_name, importtype)
             image = cv2.imread(self.file_path)
-            cv2.imwrite("Preview.png", image)
+            cv2.imwrite("Image-Converter/Preview.png", image)
         self.updatePic()
 
     def updateID(self, filename, way):
@@ -123,13 +128,13 @@ class ui():
         
         
         if(self.file_path == "None"):
-            img = Image.open('Preview.png')
+            img = Image.open('Image-Converter/Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         else:
             try:
 
-                openpic = cv_imread("Preview.png")
-                realpic = Image.open("Preview.png")
+                openpic = cv_imread("Image-Converter/Preview.png")
+                realpic = Image.open("Image-Converter/Preview.png")
                 lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
                 ratio = openpic.shape[0]/openpic.shape[1]
                 if(lside == 'h'):
@@ -138,7 +143,7 @@ class ui():
                     dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
             except Exception as e:
                 print(e)
-                img = Image.open('Preview.png')
+                img = Image.open('Image-Converter/Preview.png')
                 dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
                 self.clear()
                 showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
@@ -153,7 +158,7 @@ class ui():
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
         self.win.resizable(False, False)
-        self.win.iconbitmap('Bernie.ico')
+        self.win.iconbitmap('Image-Converter/Bernie.ico')
 
         #本地檔案導入方式(LII)
         self.promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=27)
@@ -166,8 +171,8 @@ class ui():
         self.btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU).place(x=485, y=82)
         self.entryU.place(x=150, y=80)
         #雲端導入方式(CI)
-        self.GDicon = ImageTk.PhotoImage(Image.open('Drive.png').resize((50,50)))
-        self.DBicon = ImageTk.PhotoImage(Image.open('Dropbox.png').resize((50,50)))
+        self.GDicon = ImageTk.PhotoImage(Image.open('Image-Converter/Drive.png').resize((50,50)))
+        self.DBicon = ImageTk.PhotoImage(Image.open('Image-Converter/Dropbox.png').resize((50,50)))
         self.promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20).place(x=600, y=15)
         self.btnGD = tk.Button(text="Google Drive", image=self.GDicon, command=self.openFileGD)
         self.btnDB = tk.Button(text="Dropbox", image = self.DBicon).place(x=680, y=60)
@@ -176,6 +181,12 @@ class ui():
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
         self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)
         #效果處理器(EP)
+            #顯示要疊加上去的顏色的方塊
+        self.color_block_label = tk.Label(width=10, text="顏色預覽", justify="left").place(x=50, y=120)    
+        self.color_block = tk.Label(width=4, bg="white")
+        self.color_block.place(x=120, y=120)
+            #疊加按鈕
+        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left").place(x=200, y=120)
             #HSV滑桿的部分
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
@@ -186,9 +197,7 @@ class ui():
         self.S_slider.place(x=50, y=190)
         self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
         self.V_slider.place(x=50, y=230)
-        self.H_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=170) #Entry部分之後會做數值同步
-        self.S_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=210)
-        self.V_entry = tk.Entry(width=4, state=DISABLED).place(x=260, y=250)
+        
             #侵蝕、膨脹的部分
         self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=EP.ep.erode)
         self.erodebtn.place(x=50, y=280)
@@ -253,7 +262,7 @@ class ui():
         self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
         #圖片預覽(PoI)
         self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
-        img = Image.open('Preview.png')
+        img = Image.open('Image-Converter/Preview.png')
         tk_img = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
         self.preframe = tk.Frame(self.win, width = 440, height = 320).place(x=560, y=220)
         self.preview = tk.Label(image=tk_img, width=420, height=300)
