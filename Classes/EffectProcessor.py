@@ -4,26 +4,43 @@ import UserInterface as UI
 import numpy as np
 
 class ep():
-    
+    def __init__(self):
+        self.bg_color = cv2.imread("Image-Converter/Default Preview.png")
+        self.R = 0
+        self.G = 0
+        self.B = 0
+        self.original = cv2.imread("Image-Converter/Preview.png")
+        self.rotate_90 = cv2.rotate(self.original, cv2.ROTATE_90_CLOCKWISE)
+        self.rotate_180 = cv2.rotate(self.original, cv2.ROTATE_180)
+        self.rotate_270 = cv2.rotate(self.rotate_180, cv2.ROTATE_90_CLOCKWISE)
     def changeHSV(self, event):
         def _from_rgb(r, g, b):
             return "#%02x%02x%02x" % (r, g, b)   
+
+        self.bg_color = cv2.cvtColor(self.bg_color, cv2.COLOR_BGR2HSV)
+
+        self.bg_color[:, :, 0] = UI.ui.H_slider.get()
+        self.bg_color[:, :, 1] = UI.ui.S_slider.get()
+        self.bg_color[:, :, 2] = UI.ui.V_slider.get()
+
+        out = cv2.cvtColor(self.bg_color, cv2.COLOR_HSV2BGR)
+
+        self.B = out[:, :, 0][0][0]
+        self.G = out[:, :, 1][0][0]
+        self.R = out[:, :, 2][0][0]
+
+        UI.ui.color_block["bg"] = "%s" % _from_rgb(r=self.R, g=self.G, b=self.B)
+
+    def updateHSV(self):
         image = cv2.imread("Image-Converter/Preview.png")
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        
+        image[:, :, 0] += self.B
+        image[:, :, 1] += self.G
+        image[:, :, 2] += self.R
 
+        cv2.imwrite("Image-Converter/Preview.png", image)
+        UI.ui.updatePic()
 
-        image[:, :, 0] = UI.ui.H_slider.get()
-        image[:, :, 1] = UI.ui.S_slider.get()
-        image[:, :, 2] = UI.ui.V_slider.get()
-
-        out = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
-
-        B = out[:, :, 0][0][0]
-        G = out[:, :, 1][0][0]
-        R = out[:, :, 2][0][0]
-        print("%s %s %s" % (R, G, B))
-        print(_from_rgb(r=R, g=G, b=B))
-        UI.ui.color_block["bg"] = "%s" % _from_rgb(r=R, g=G, b=B)
 
     def erode(self):
         image = cv2.imread("Preview.png")
@@ -57,4 +74,14 @@ class ep():
 
         UI.ui.updatePic()
 
+    def rotate(self, degrees):
+        if(degrees == 0):
+            cv2.imwrite("Image-Converter/Preview.png", self.original)
+        elif(degrees == 90):
+            cv2.imwrite("Image-Converter/Preview.png", self.rotate_90)
+        elif(degrees == 180):
+            cv2.imwrite("Image-Converter/Preview.png", self.rotate_180)
+        elif(degrees == 270):
+            cv2.imwrite("Image-Converter/Preview.png", self.rotate_270)
+        UI.ui.updatePic()
 ep = ep()

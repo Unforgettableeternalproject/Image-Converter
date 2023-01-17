@@ -15,7 +15,7 @@ import EffectProcessor as EP
 class ui():
 
     def __init__(self) -> None:
-
+        
         self.win = tk.Tk()
         self.defaultFont = tkFont.Font(root=self.win, name="TkDefaultFont", exists=True)
         self.defaultFont.configure(family="Microsoft YaHei",
@@ -28,6 +28,7 @@ class ui():
         self.dlpath = "None"
         self.textvariable = 0
         self.createPreview()
+
         pass
 
     def example(self):
@@ -66,6 +67,8 @@ class ui():
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
+            self.createRotatedImage()
+            self.getImageSize()
         else:
             self.clear()
             showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -94,6 +97,8 @@ class ui():
             image = cv2.imread(self.file_path)
             cv2.imwrite("Image-Converter/Preview.png", image)
             self.updateID(file_name, importtype)
+            self.createRotatedImage()
+            self.getImageSize()
         self.updatePic()
         
     def openFIleU(self):
@@ -113,6 +118,9 @@ class ui():
             self.updateID(file_name, importtype)
             image = cv2.imread(self.file_path)
             cv2.imwrite("Image-Converter/Preview.png", image)
+            self.createRotatedImage()
+            self.getImageSize()
+            
         self.updatePic()
 
     def updateID(self, filename, way):
@@ -151,6 +159,18 @@ class ui():
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
 
+    def createRotatedImage(self):
+        EP.ep.original = cv2.imread("Image-Converter/Preview.png")
+        EP.ep.rotate_90 = cv2.rotate(EP.ep.original, cv2.ROTATE_90_CLOCKWISE)
+        EP.ep.rotate_180 = cv2.rotate(EP.ep.original, cv2.ROTATE_180)
+        EP.ep.rotate_270 = cv2.rotate(EP.ep.rotate_180, cv2.ROTATE_90_CLOCKWISE)
+
+    def getImageSize(self):
+        img = cv2.imread("Image-Converter/Preview.png")
+        height = img.shape[0]
+        width = img.shape[1]
+        output = "%d x %d" % (height, width)
+        self.display["text"] = output
 
     def open_window(self):
   
@@ -186,7 +206,7 @@ class ui():
         self.color_block = tk.Label(width=4, bg="white")
         self.color_block.place(x=120, y=120)
             #疊加按鈕
-        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left").place(x=200, y=120)
+        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left", command=EP.ep.updateHSV).place(x=200, y=120)
             #HSV滑桿的部分
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
@@ -218,7 +238,8 @@ class ui():
         self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
         #尺寸動態顯示(SD)
         self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=150)
-        self.display = tk.Text(height=1, width=15, state="disabled").place(x=325, y=173)
+        self.display = tk.Label(height=1, width=15)
+        self.display.place(x=325, y=173)
         #方位處理器(PP)
             #縮放的部分
         self.fixedscale = tk.Checkbutton(text="固定比例")
@@ -237,10 +258,10 @@ class ui():
         self.ztt.place(x=360, y=194)
             #旋轉的部分
         self.rolabel = tk.Label(text="預設旋轉:").place(x=320, y=308)
-        self.zero =tk.Radiobutton(text="不旋轉", value=1)
-        self.nighty = tk.Radiobutton(text="旋轉90度", value=2).place(x=420, y=330)
-        self.horiflip = tk.Radiobutton(text="旋轉180度", value=3).place(x=320, y=355)
-        self.twoseventy = tk.Radiobutton(text="旋轉270度", value=4).place(x=420, y=355)
+        self.zero =tk.Radiobutton(text="不旋轉", value=1, command= lambda x = None: EP.ep.rotate(0))
+        self.nighty = tk.Radiobutton(text="旋轉90度", value=2, command= lambda x = None: EP.ep.rotate(90)).place(x=420, y=330)
+        self.horiflip = tk.Radiobutton(text="旋轉180度", value=3, command= lambda x = None: EP.ep.rotate(180)).place(x=320, y=355)
+        self.twoseventy = tk.Radiobutton(text="旋轉270度", value=4, command= lambda x = None: EP.ep.rotate(270)).place(x=420, y=355)
         self.crolabel = tk.Label(text="自訂旋轉角度:").place(x=320, y=385)
         self.croinput = tk.Text(height=1, width=4).place(x=405, y=387)
         self.degree = tk.Label(text="度").place(x=435, y=385)
