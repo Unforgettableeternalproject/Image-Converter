@@ -2,6 +2,7 @@
 import cv2
 import UserInterface as UI
 import numpy as np
+import tkinter as tk
 
 class ep():
     def __init__(self):
@@ -84,4 +85,12 @@ class ep():
         elif(degrees == 270):
             cv2.imwrite("Image-Converter/Preview.png", self.rotate_270)
         UI.ui.updatePic()
+    def resize(self):
+        height = int(UI.ui.height.get("1.0", tk.END))
+        width = int(UI.ui.width.get("1.0", tk.END))
+        original = cv2.imread("Image-Converter/Preview.png")
+        resized = cv2.resize(original, (height, width))
+        cv2.imwrite("Image-Converter/Preview.png", resized)
+        UI.ui.getImageSize()
+        
 ep = ep()
