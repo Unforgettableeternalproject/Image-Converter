@@ -189,12 +189,12 @@ class file_man():
                     msglabel['fg'] = 'maroon'
                     alertmsg.set("Unknown error occured, please try another file.")
 
-        self.cpath = tk.StringVar()
-        promptD = tk.Toplevel()
-        promptD.iconbitmap('Bernie.ico')
-        promptD.title("Google Drive File Selector")
-        promptD.geometry('350x150')
-        promptD.resizable(0,0)
+        self.path = tk.StringVar()
+        self.promptD = tk.Toplevel()
+        self.promptD.iconbitmap('Image-Converter/Bernie.ico')
+        self.promptD.title("Google Drive File Selector")
+        self.promptD.geometry('350x150')
+        self.promptD.resizable(0,0)
         global item_list
         try:       
             item_list = self.driveFetch() #如果沒有資料就跳出錯誤視窗 
@@ -256,7 +256,7 @@ class file_man():
                     else: alertmsg.set("Please enter a VALID image URL.")
 
         prompt = tk.Toplevel()
-        prompt.iconbitmap('Bernie.ico')
+        prompt.iconbitmap('Image-Converter/Bernie.ico')
         prompt.title("Image URL Fetcher")
         prompt.geometry('350x150')
         prompt.resizable(0,0)

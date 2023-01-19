@@ -1,4 +1,6 @@
 ﻿import sys, os
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(1)
 
 def checkReqPackages():
     with open("requirements.txt", mode = "r", encoding = "utf-8") as file:
