@@ -1,5 +1,5 @@
 Local Image Import:從本地端導入圖片
-Image URL Import:以URL導入圖片
+Image URL Import:以URL導入圖片 (測試用:https://images.pexels.com/photos/301599/pexels-photo-301599.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)
 Cloud Import:從雲端導入圖片
 Label:浮水印
 Effect Pocessor:效果處理器，目前暫定應該能加入預設效果、調整HSV數值等
@@ -7,7 +7,7 @@ Size Display:顯示圖片尺寸
 Information Display:顯示圖片名稱、導入方式，以及還原/重作效果
 Position Processor:變形處理器，改變圖片大小、等比例與非等比例縮放、旋轉等等
 Preview of Image:圖像及時預覽(對於不同尺寸的圖片會加以縮放(等比)並維持在固定視窗內) 930x665
-Export:導出圖片，在圖片之左下角加入浮水印
+Export:導出圖片，在圖片之左下角加入浮水印，並且可以轉檔
 
 除此之外，我還想加個Tktinter的Menu
 能夠監控歷程記錄(Log)、重置程式等
@@ -24,3 +24,11 @@ PP的部分:
 固定比例(勾選方框)
 長寬比更改(文字框x2, 滑桿(只有當固定比例時才能用))
 旋轉變化(單選框x3(當作預設效果), 文字框(絕對化數值), 下拉式選單(選取順/逆時針))
+
+註記:
+我要把file_path的部分簡化 -> 完成
+導入本機非英文檔案 -> 完成
+偵測是否為線上環境 -> 完成
+重置時把子視窗關閉
+OAuth驗證時如果把網頁視窗關掉的處理
+圖片Resize優化

@@ -6,16 +6,19 @@ from tkinter import ttk
 import tkinter.font as tkFont
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
-import FileManager as fm
+import requests
+import Classes.FileManager as FM
 import numpy as np
 import cv2
-import EffectProcessor as EP
+import Classes.EffectProcessor as EP
 #tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
-
+f = FM.file_man()
+e = EP.ep()
 class ui():
 
     def __init__(self) -> None:
-        
+        self.original = None
+        self.vaild = False
         self.win = tk.Tk()
         self.defaultFont = tkFont.Font(root=self.win, name="TkDefaultFont", exists=True)
         self.defaultFont.configure(family="Microsoft YaHei",
@@ -24,23 +27,93 @@ class ui():
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
-        self.file_path = "None"
-        self.dlpath = "None"
         self.textvariable = 0
         self.createPreview()
-
+        self.status = self.chknet()
         pass
 
+    def chknet(self):
+        try:
+            requests.get('https://www.google.com',timeout=10)
+            return True
+        except (requests.ConnectionError, requests.Timeout):
+            return False
+
+    def quit(self):
+        ans = askyesno("結束程式", "你確定要離開了嗎? (Bernie會想你的)")
+        if(ans): self.win.destroy()
+        else: pass
+
+    def sendM(self):
+        if(self.vaild):
+            if(not self.status):
+                showerror('沒有連線!', '你尚未連線到網際網路!')
+                return None
+            try:
+                flag = f.sendFileViaMail()
+                if(flag): showinfo('寄送成功!!', '您修改過的圖檔已經成功寄送給目標信箱!')
+                else: pass
+            except Exception as e:
+                print(e)
+                showerror('寄送失敗!', '發生未知的錯誤導致寄送失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
+
+    def saveL(self):
+        if(self.vaild):
+            try:
+                flag = f.saveFileLocal()
+                if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
+                else: pass
+            except Exception as e:
+                print(e)
+                showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
+
+    def saveC(self):
+        if(self.vaild):
+            if(not self.status):
+                showerror('沒有連線!', '你尚未連線到網際網路!')
+                return None
+            try:
+                flag = f.saveFileCloud()
+                if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至雲端!')
+                else: pass
+            except Exception as e:
+                print(e)
+                showerror('匯出失敗!', '發生未知的錯誤導致匯出失敗，我們深感抱歉!')
+        else:
+            showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
+
+    def resetall(self):
+        ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
+        if(ans):
+            self.createPreview()
+            self.updatePic()
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
+            self.vaild = False
+            self.status = self.chknet()
+            self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
+            if(not self.status): self.dstatus['fg'] = "red"
+            else: self.dstatus['fg'] = 'green'
+        else: pass #Not Yet Done
+
     def example(self):
-        self.file_path = path.realpath('Default Image.png')
+        image = cv2.imread('Image-Converter/Default Image.png')
+        cv2.imwrite("Image-Converter/Preview.png", image)
         file_name = '範例圖片.png'
         importtype = "範例圖片檔案"
-        if(path.exists(self.dlpath)): remove(self.dlpath)
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
         self.clear()
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
+        self.vaild = True
         self.updateID(file_name, importtype)
         self.updatePic()
 
@@ -50,18 +123,35 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
-        if(path.exists(self.dlpath)): remove(self.dlpath)
+        self.display['state'] = 'normal'
+        self.display.delete(1.0, "end")
+        self.display['state'] = 'disabled'
+        
+    def createPreview(self):
+        self.vaild = False
+        og = cv2.imread("Image-Converter/Default Preview.png")
+        cv2.imwrite("Image-Converter/Preview.png", og)    
+        
+    def accessOriginal(self, mode):
+        if(mode == 'Set'):
+            self.original = cv2.imread("Image-Converter/Preview.png")
+            return None
+        if(mode == 'Get'):
+            return self.original
 
     def openFileGD(self):
-        self.file_path, file_name = fm.f.loadFileViaDrive()
-        if(path.isfile(self.file_path)):
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
+        self.tvaild = f.loadFileViaDrive()
+        if(self.tvaild):
             showinfo('成功!', '雲端檔案已經成功匯入!')
+            file_name = 'cloud_img.png'
             importtype = "從雲端硬碟導入"
+            self.vaild = True
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.clear()
-            self.file_path = path.realpath(self.file_path)
-            self.dlpath = self.file_path
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN
@@ -70,9 +160,8 @@ class ui():
             self.createRotatedImage()
             self.getImageSize()
         else:
-            self.clear()
-            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            self.file_path = "None"
+            pass
+            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
 
     def createPreview(self):
@@ -102,18 +191,21 @@ class ui():
         self.updatePic()
         
     def openFIleU(self):
-        self.file_path, file_name = fm.f.loadFileURL()
-        importtype = "從URL導入"
-        self.entryL['state'] = NORMAL
-        self.entryU['state'] = NORMAL
-        self.clear()
-        self.dlpath = self.file_path
-        self.entryU.insert("insert", self.file_path)
-        self.entryL['state'] = DISABLED
-        self.entryU['state'] = DISABLED
-        if(file_name == "Invalid Input!!!"): 
-            showerror('匯入失敗', '檔案可能有問題或者伺服器出錯，請再試一次。')
-            self.file_path = "None"
+        if(not self.status):
+            showerror('沒有連線!', '你尚未連線到網際網路!')
+            return None
+        self.tvaild, url = f.loadFileURL()
+        if(self.tvaild): 
+            file_name = 'url_image.png'
+            importtype = "從URL導入" 
+            self.vaild = True
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryU.insert("insert", url)
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
+            self.updateID(file_name, importtype)
         else: 
             self.updateID(file_name, importtype)
             image = cv2.imread(self.file_path)
@@ -173,7 +265,48 @@ class ui():
         self.display["text"] = output
 
     def open_window(self):
-  
+        def hsv(event):
+            e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
+            self.updatePic()
+        def erode():
+            e.erode()
+            self.updatePic()
+        def dilate():
+            e.dilate()
+            self.updatePic()
+        def opening():
+            if(b1.get()):
+                self.accessOriginal('Set')
+                e.opening()
+                self.gradientck['state'] = 'disabled'
+                self.closingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.gradientck['state'] = 'normal'
+                self.closingck['state'] = 'normal'
+            self.updatePic()
+        def closing():
+            if(b2.get()):
+                self.accessOriginal('Set')
+                e.closing()
+                self.gradientck['state'] = 'disabled'
+                self.openingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.gradientck['state'] = 'normal'
+                self.openingck['state'] = 'normal'
+            self.updatePic()
+        def gradient():
+            if(b3.get()):
+                self.accessOriginal('Set')
+                e.gradient()
+                self.openingck['state'] = 'disabled'
+                self.closingck['state'] = 'disabled'
+            else:
+                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                self.openingck['state'] = 'normal'
+                self.closingck['state'] = 'normal'
+            self.updatePic()
         #視窗介面
         self.win.title('OmniImaginer.exe')
         self.win.geometry('1000x563')
@@ -181,25 +314,34 @@ class ui():
         self.win.iconbitmap('Image-Converter/Bernie.ico')
 
         #本地檔案導入方式(LII)
-        self.promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=27)
+        promptL = tk.Label(text="選取本地檔案", bg="grey", fg="white", height=2, width=15)
         self.entryL = tk.Text(height=2, width=45, state="disabled")
-        self.btnL = tk.Button(text="...", height=1, width=4, command=self.openFileL).place(x=485, y=32)
+        btnL = tk.Button(text="...", height=1, width=4, command=self.openFileL)
         self.entryL.place(x=150, y=30)
+        promptL.place(x=25, y=27)
+        btnL.place(x=485, y=32)
         #網路檔案導入方式(IUI)
-        self.promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15).place(x=25, y=77)
+        promptU = tk.Label(text="導入網路檔案", bg="grey", fg="white", height=2, width=15)
         self.entryU = tk.Text(height=2, width=45, state="disabled")
-        self.btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU).place(x=485, y=82)
+        btnU = tk.Button(text="...", height=1, width=4, command=self.openFIleU)
         self.entryU.place(x=150, y=80)
+        promptU.place(x=25, y=77)
+        btnU.place(x=485, y=82)
         #雲端導入方式(CI)
-        self.GDicon = ImageTk.PhotoImage(Image.open('Image-Converter/Drive.png').resize((50,50)))
-        self.DBicon = ImageTk.PhotoImage(Image.open('Image-Converter/Dropbox.png').resize((50,50)))
-        self.promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20).place(x=600, y=15)
-        self.btnGD = tk.Button(text="Google Drive", image=self.GDicon, command=self.openFileGD)
-        self.btnDB = tk.Button(text="Dropbox", image = self.DBicon).place(x=680, y=60)
-        self.btnGD.place(x=610, y=60)
+        GDicon = ImageTk.PhotoImage(Image.open('Image-Converter/Drive.png').resize((50,50)))
+        promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20)
+        self.btnGD = tk.Button(text="Google Drive", image=GDicon, command=self.openFileGD)
+        self.sva = tk.StringVar()
+        self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
+        self.dstatus = tk.Label(textvariable = self.sva, fg="green")
+        if(not self.status): self.dstatus['fg'] = "red"
+        promptC.place(x=600, y=15)
+        self.dstatus.place(x=810, y=3)
+        self.btnGD.place(x=645, y=60)
         #浮水印(L)
         #self.img= ImageTk.PhotoImage(Image.open("uep.png").resize((100,120)))
-        self.label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25).place(x=810, y=25)
+        label = tk.Label(text="浮水印預定放置區塊",bg="grey", fg="white", height=5, width=25)
+        label.place(x=810, y=25)
         #效果處理器(EP)
             #顯示要疊加上去的顏色的方塊
         self.color_block_label = tk.Label(width=10, text="顏色預覽", justify="left").place(x=50, y=120)    
@@ -211,26 +353,28 @@ class ui():
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
         self.V_label = tk.Label(text="明度:").place(x=15, y=249)
-        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.H_slider.place(x=50, y=150)
-        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.S_slider.place(x=50, y=190)
-        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=EP.ep.changeHSV)
+        self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.V_slider.place(x=50, y=230)
         
             #侵蝕、膨脹的部分
-        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=EP.ep.erode)
+        self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=erode)
         self.erodebtn.place(x=50, y=280)
-        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=EP.ep.dilate)
+        self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=dilate)
         self.dilatebtn.place(x=50, y=330)
         self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
         self.edvalue = tk.Entry(width=4, state=DISABLED)
         self.edvalue.place(x=200, y=344)
-        self.openingck = tk.Checkbutton(text="去白點", command=EP.ep.opening)
+        b1 = tk.BooleanVar(); b2 = tk.BooleanVar(); b3 = tk.BooleanVar()
+        self.openingck = tk.Checkbutton(text="去白點", variable=b1, command=opening)
         self.openingck.place(x=125, y=285)
-        self.closingck = tk.Checkbutton(text="去黑點", command=EP.ep.closing)
+        self.closingck = tk.Checkbutton(text="去黑點", variable=b2, command=closing)
         self.closingck.place(x=195, y=285)
-        self.gradientck = tk.Checkbutton(text="只顯示輪廓").place(x=148, y=310)
+        self.gradientck = tk.Checkbutton(text="只顯示輪廓", variable=b3, command=gradient)
+        self.gradientck.place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
         self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"]).place(x=85, y=385)
@@ -292,11 +436,11 @@ class ui():
         self.preview.place(x=570, y=230)
         #輸出(ExP)
         self.promptE = tk.Label(text="導出檔案", bg="grey", fg="white", height=2, width=71).place(x=25, y=430)
-        self.localS = tk.Button(text="儲存至電腦", height=2, width=20).place(x=30, y=480)
-        self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20)
+        self.localS = tk.Button(text="儲存至電腦", height=2, width=20, command=self.saveL).place(x=30, y=480)
+        self.cloudS = tk.Button(text="上傳至雲端(?)", height=2, width=20, command = self.saveC)
         self.tp2 = Hovertip(self.cloudS, "目前只支援Google雲端硬碟")
         self.cloudS.place(x=200, y=480)
-        self.mails = tk.Button(text="寄送給他人", height=2, width=20).place(x=370, y=480)
+        self.mails = tk.Button(text="寄送給他人", height=2, width=20, command=self.sendM).place(x=370, y=480)
 
         #菜單
         self.menu = tk.Menu()
@@ -304,7 +448,7 @@ class ui():
         self.win.config(menu=self.menu)
         self.file = tk.Menu(self.menu, tearoff=0)
         self.file.add_command(label='顯示範例', command=self.example) #程式中顯示範例圖片檔的預覽
-        self.file.add_command(label='完全重置', foreground='red') #跳出視窗顯示警告，並詢問是否真的要重置
+        self.file.add_command(label='完全重置', foreground='red', command=self.resetall) #跳出視窗顯示警告，並詢問是否真的要重置
 
         self.window = tk.Menu(self.menu, tearoff=0)
         self.window.add_command(label='步驟紀錄') #跳出新視窗，顯示步驟紀錄
@@ -326,7 +470,6 @@ class ui():
         self.menu.add_cascade(label='顯示', menu=self.view)
         self.menu.add_cascade(label='幫助', menu=self.help)
         #運行程式
+        self.win.protocol("WM_DELETE_WINDOW", self.quit)
         self.win.mainloop()
-
-ui = ui()
 

@@ -1,8 +1,7 @@
-﻿from PIL import Image,ImageDraw,ImageFont
+﻿import tkinter as tk
+from PIL import Image,ImageDraw,ImageFont
 import cv2
-import UserInterface as UI
 import numpy as np
-import tkinter as tk
 
 class ep():
     def __init__(self):
@@ -20,9 +19,9 @@ class ep():
 
         self.bg_color = cv2.cvtColor(self.bg_color, cv2.COLOR_BGR2HSV)
 
-        self.bg_color[:, :, 0] = UI.ui.H_slider.get()
-        self.bg_color[:, :, 1] = UI.ui.S_slider.get()
-        self.bg_color[:, :, 2] = UI.ui.V_slider.get()
+        self.bg_color[:, :, 0] = h
+        self.bg_color[:, :, 1] = s
+        self.bg_color[:, :, 2] = v
 
         out = cv2.cvtColor(self.bg_color, cv2.COLOR_HSV2BGR)
 
@@ -40,7 +39,6 @@ class ep():
         image[:, :, 2] += self.R
 
         cv2.imwrite("Image-Converter/Preview.png", image)
-        UI.ui.updatePic()
 
 
     def erode(self):
@@ -49,7 +47,6 @@ class ep():
         out = cv2.erode(image, kernel, iterations=1)  
         cv2.imwrite("Image-Converter/Preview.png", out)
 
-        UI.ui.updatePic()
 
     def dilate(self):
         image = cv2.imread("Image-Converter/Preview.png")
@@ -57,7 +54,6 @@ class ep():
         out = cv2.dilate(image, kernel, iterations=1)  
         cv2.imwrite("Image-Converter/Preview.png", out)
 
-        UI.ui.updatePic()
 
     def opening(self):
         image = cv2.imread("Image-Converter/Preview.png")
@@ -65,7 +61,6 @@ class ep():
         out = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=1)
         cv2.imwrite("Image-Converter/Preview.png", out)
 
-        UI.ui.updatePic()
 
     def closing(self):
         image = cv2.imread("Image-Converter/Preview.png")
