@@ -272,9 +272,6 @@ class fm():
         yrbtn.pack()
         msglabel.pack()
         prompt.wait_window()
-        #print(ftype)
-        ##filename = "url_img" + ftype if ftype != '' else "Invalid Input!!!"
-        #ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
         return self.vaild, path.get()
 
     def loadFileLocal(self):

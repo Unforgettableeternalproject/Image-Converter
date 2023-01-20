@@ -215,8 +215,6 @@ class ui():
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.getImageSize()
             self.updateID(file_name, importtype)
-            image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1)
-            cv2.imwrite("Preview.png", image)
             self.createFlipedImage()
         else: 
             if(not url): pass 
