@@ -11,9 +11,10 @@ import Classes.FileManager as FM
 import numpy as np
 import cv2
 import Classes.EffectProcessor as EP
-#tkinter.messagebox.showinfo(title = 'Hello',message = file_path)
+
 f = FM.file_man()
 e = EP.ep()
+
 class ui():
 
     def __init__(self) -> None:
@@ -22,12 +23,14 @@ class ui():
         self.win = tk.Tk()
         self.defaultFont = tkFont.Font(root=self.win, name="TkDefaultFont", exists=True)
         self.defaultFont.configure(family="Microsoft YaHei",
-                                   size=7,
+                                   size=9,
                                    weight=tkFont.NORMAL)
         self.basepath = path.dirname(path.realpath(__file__))
         self.align_mode = 'nsew'
         self.pad = 8
         self.textvariable = 0
+        self.dimension = (0,0)
+        self.createPreview()
         self.status = self.chknet()
 
     def chknet(self):
@@ -39,7 +42,9 @@ class ui():
 
     def quit(self):
         ans = askyesno("結束程式", "你確定要離開了嗎? (Bernie會想你的)")
-        if(ans): self.win.destroy()
+        if(ans): 
+            self.win.destroy()
+            remove('Preview.png')
         else: pass
 
     def sendM(self):
@@ -114,6 +119,8 @@ class ui():
         self.vaild = True
         self.updateID(file_name, importtype)
         self.updatePic()
+        self.createRotatedImage()
+        self.getImageSize()
 
     def clear(self):
         self.entryL.delete(1.0, "end")
@@ -121,9 +128,7 @@ class ui():
         self.btnGD['relief'] = RAISED
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
-        self.display['state'] = 'normal'
-        self.display.delete(1.0, "end")
-        self.display['state'] = 'disabled'
+        self.display['text'] = '尚未導入!!'
         
     def createPreview(self):
         self.vaild = False
@@ -173,12 +178,12 @@ class ui():
         self.entryL.insert("insert", self.file_path)
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        
         if(self.file_path == ""): 
             self.file_path = "None"
         else: 
-            image = cv2.imread(self.file_path)
+            image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1); print(self.file_path)
             cv2.imwrite("Preview.png", image)
+            self.vaild = True
             self.updateID(file_name, importtype)
             self.createRotatedImage()
             self.getImageSize()
@@ -202,11 +207,10 @@ class ui():
             self.updateID(file_name, importtype)
         else: 
             self.updateID(file_name, importtype)
-            image = cv2.imread(self.file_path)
+            image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1)
             cv2.imwrite("Preview.png", image)
             self.createRotatedImage()
             self.getImageSize()
-            
         self.updatePic()
 
     def updateID(self, filename, way):
@@ -220,53 +224,53 @@ class ui():
             cv_pic = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
             return cv_pic
         
-        
-        if(self.file_path == "None"):
+        try:
+            openpic = cv_imread("Preview.png")
+            realpic = Image.open("Preview.png")
+            lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
+            ratio = openpic.shape[0]/openpic.shape[1]
+            if(lside == 'h'):
+                dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
+            else:
+                dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
+        except Exception as e:
+            print(e)
             img = Image.open('Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
-        else:
-            try:
-
-                openpic = cv_imread("Preview.png")
-                realpic = Image.open("Preview.png")
-                lside = 'h' if (max(openpic.shape[0], openpic.shape[1]) == openpic.shape[0]) else 'w'
-                ratio = openpic.shape[0]/openpic.shape[1]
-                if(lside == 'h'):
-                    dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
-                else:
-                    dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
-            except Exception as e:
-                print(e)
-                img = Image.open('Preview.png')
-                dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
-                self.clear()
-                showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
+            self.clear()
+            showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
 
     def createRotatedImage(self):
-        EP.ep.original = cv2.imread("Preview.png")
-        EP.ep.rotate_90 = cv2.rotate(EP.ep.original, cv2.ROTATE_90_CLOCKWISE)
-        EP.ep.rotate_180 = cv2.rotate(EP.ep.original, cv2.ROTATE_180)
-        EP.ep.rotate_270 = cv2.rotate(EP.ep.rotate_180, cv2.ROTATE_90_CLOCKWISE)
+        e.original = cv2.imread("Preview.png")
+        e.rotate_90 = cv2.rotate(e.original, cv2.ROTATE_90_CLOCKWISE)
+        e.rotate_180 = cv2.rotate(e.original, cv2.ROTATE_180)
+        e.rotate_270 = cv2.rotate(e.rotate_180, cv2.ROTATE_90_CLOCKWISE)
 
     def getImageSize(self):
         img = cv2.imread("Preview.png")
-        height = img.shape[0]
-        width = img.shape[1]
-        output = "%d x %d" % (height, width)
+        self.dimension = (img.shape[0], img.shape[1])
+        output = "%d x %d" % (self.dimension[0], self.dimension[1])
         self.display["text"] = output
 
     def open_window(self):
         def hsv(event):
-            e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
+            self.color_block['bg'] = e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
+        def update():
+            e.updateHSV()
+            self.createRotatedImage()
             self.updatePic()
         def erode():
             e.erode()
+            self.createRotatedImage()
+            self.edv.set(str(int(self.edv.get())+1))
             self.updatePic()
         def dilate():
             e.dilate()
+            self.createRotatedImage()
+            self.edv.set(str(int(self.edv.get())-1))
             self.updatePic()
         def opening():
             if(b1.get()):
@@ -278,6 +282,7 @@ class ui():
                 cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                 self.gradientck['state'] = 'normal'
                 self.closingck['state'] = 'normal'
+            self.createRotatedImage()
             self.updatePic()
         def closing():
             if(b2.get()):
@@ -289,6 +294,7 @@ class ui():
                 cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                 self.gradientck['state'] = 'normal'
                 self.openingck['state'] = 'normal'
+            self.createRotatedImage()
             self.updatePic()
         def gradient():
             if(b3.get()):
@@ -300,7 +306,12 @@ class ui():
                 cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                 self.openingck['state'] = 'normal'
                 self.closingck['state'] = 'normal'
+            self.createRotatedImage()
             self.updatePic()
+        def rotate(value):
+            e.rotate(value)
+            self.updatePic()
+        def resize(): pass
 
         #視窗介面
         self.win.title('OmniImaginer.exe')
@@ -343,7 +354,7 @@ class ui():
         self.color_block = tk.Label(width=4, bg="white")
         self.color_block.place(x=120, y=120)
             #疊加按鈕
-        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left", command=EP.ep.updateHSV).place(x=200, y=120)
+        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left", command=update).place(x=200, y=120)
             #HSV滑桿的部分
         self.H_label = tk.Label(text="色相:").place(x=15, y=169)
         self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
@@ -361,7 +372,9 @@ class ui():
         self.dilatebtn = tk.Button(text="膨脹++", height=2, width=7, command=dilate)
         self.dilatebtn.place(x=50, y=330)
         self.eddisplay = tk.Label(text="平衡落差:").place(x=140, y=342)
-        self.edvalue = tk.Entry(width=4, state=DISABLED)
+        self.edv = tk.StringVar()
+        self.edv.set('0')
+        self.edvalue = tk.Entry(width=4, state=DISABLED, textvariable=self.edv)
         self.edvalue.place(x=200, y=344)
         b1 = tk.BooleanVar(); b2 = tk.BooleanVar(); b3 = tk.BooleanVar()
         self.openingck = tk.Checkbutton(text="去白點", variable=b1, command=opening)
@@ -377,8 +390,8 @@ class ui():
         self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
         #尺寸動態顯示(SD)
         self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=150)
-        self.display = tk.Label(height=1, width=15)
-        self.display.place(x=325, y=173)
+        self.display = tk.Label(text="尚未導入!!", height=1, width=15)
+        self.display.place(x=325, y=170)
         #方位處理器(PP)
             #縮放的部分
         self.fixedscale = tk.Checkbutton(text="固定比例")
@@ -394,15 +407,15 @@ class ui():
         self.x = tk.Label(text="x").place(x=385, y=283)
         self.width = tk.Text(height=1, width=7)
         self.width.place(x=403, y=285)
-        self.reset = tk.Button(text="重置尺寸", command=lambda x = None: EP.ep.resize()).place(x=467, y=280)
+        self.reset = tk.Button(text="設定尺寸", command=resize).place(x=467, y=280)
         self.fixedscale.place(x=450, y=169)
         self.ztt.place(x=360, y=194)
             #旋轉的部分
         self.rolabel = tk.Label(text="預設旋轉:").place(x=320, y=308)
-        self.zero =tk.Radiobutton(text="不旋轉", value=1, command= lambda x = None: EP.ep.rotate(0))
-        self.nighty = tk.Radiobutton(text="旋轉90度", value=2, command= lambda x = None: EP.ep.rotate(90)).place(x=420, y=330)
-        self.horiflip = tk.Radiobutton(text="旋轉180度", value=3, command= lambda x = None: EP.ep.rotate(180)).place(x=320, y=355)
-        self.twoseventy = tk.Radiobutton(text="旋轉270度", value=4, command= lambda x = None: EP.ep.rotate(270)).place(x=420, y=355)
+        self.zero =tk.Radiobutton(text="不旋轉", value=1, command= lambda x = None: rotate(0))
+        self.nighty = tk.Radiobutton(text="旋轉90度", value=2, command= lambda x = None: rotate(90)).place(x=420, y=330)
+        self.horiflip = tk.Radiobutton(text="旋轉180度", value=3, command= lambda x = None: rotate(180)).place(x=320, y=355)
+        self.twoseventy = tk.Radiobutton(text="旋轉270度", value=4, command= lambda x = None: rotate(270)).place(x=420, y=355)
         self.crolabel = tk.Label(text="自訂旋轉角度:").place(x=320, y=385)
         self.croinput = tk.Text(height=1, width=4).place(x=405, y=387)
         self.degree = tk.Label(text="度").place(x=435, y=385)
