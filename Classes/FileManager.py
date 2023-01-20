@@ -19,7 +19,7 @@ DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtN
 DEFAULT_MAIL_ADRESS = 'ptyc4076@gmail.com'
 DEFAULT__MAIL_TOKEN = 'yvjzdurxghiehhbv'
 
-class file_man():
+class fm():
     def __init__(self) -> None:
         self.creds = None
         pass

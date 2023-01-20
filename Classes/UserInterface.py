@@ -8,12 +8,14 @@ from idlelib.tooltip import Hovertip
 from tkinter.messagebox import * 
 import requests
 import Classes.FileManager as FM
+import Classes.EffectProcessor as EP
+import Classes.PositionProcessor as PP
 import numpy as np
 import cv2
-import Classes.EffectProcessor as EP
 
-f = FM.file_man()
+f = FM.fm()
 e = EP.ep()
+p = PP.pp()
 
 class ui():
 
@@ -125,20 +127,24 @@ class ui():
         self.btnGD['relief'] = RAISED; self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
         self.display['text'] = '尚未導入!!'
-        self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
         self.color_block['bg'] = 'black'
         self.state = False
         self.n_flipbtn.select()
+        self.dlist.current(0)
         if(self.vaild):
             self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+            self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
+            self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
-            self.croinput['state'] = 'normal'
-            self.height['state'] = 'normal'; self.width['state'] = 'normal'
+            self.croinput['state'] = 'normal';
+            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+            self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom.set(0);
         else:
             self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'disabled'
-            self.height['state'] = 'disabled'; self.width['state'] = 'disabled'
+            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+            self.fixedscale.select(); self.fixedscale['state'] = 'disabled'
         
     def createPreview(self):
         self.vaild = False
@@ -179,7 +185,7 @@ class ui():
         cpath = f.loadFileLocal()
         importtype = "從本地端導入"
         file_name = path.basename(cpath)
-        if(cpath == ""): 
+        if(cpath == "" or file_name == "Preview.png"):
             pass
         else: 
             image = cv2.imdecode(np.fromfile(cpath, dtype=np.uint8), -1);
@@ -248,18 +254,22 @@ class ui():
         #Get picture size and scale it with the preview window (420, 300)
 
     def createFlipedImage(self):
-        e.original = cv2.imread("Preview.png")
-        e.h_flip = cv2.flip(e.original, 1)
-        e.v_flip = cv2.flip(e.original, 0)
-        e.b_flip = cv2.flip(e.original, -1)
+        p.original = cv2.imread("Preview.png")
+        p.h_flip = cv2.flip(p.original, 1)
+        p.v_flip = cv2.flip(p.original, 0)
+        p.b_flip = cv2.flip(p.original, -1)
         self.n_flipbtn.select()
 
     def getImageSize(self):
         img = cv2.imread("Preview.png")
-        self.dimension = (img.shape[0], img.shape[1])
+        self.dimension = (img.shape[1], img.shape[0])
         output = "%d x %d" % (self.dimension[0], self.dimension[1])
         self.display["text"] = output + ' (px)'
-        self.height.insert("insert", self.dimension[0]); self.width.insert("insert", self.dimension[1])
+        if(self.chkscale.get()): self.zoom.set(0)
+        else: 
+            self.zoom['state'] = 'normal'
+            self.zoom.set(0)
+            self.zoom['state'] = 'disabled'
 
     def open_window(self):
         def hsv(event):
@@ -334,7 +344,7 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def flip(mode):
-            if(self.vaild): e.flip(mode)
+            if(self.vaild): p.flip(mode)
             self.updatePic()
         def rotate():
             if(self.vaild):
@@ -343,12 +353,41 @@ class ui():
                 for i in value:
                     if(not i.isdigit()): f = False
                 if(f): 
-                    if(self.dlist.get() == "順時針"): e.rotate(-(int(value) % 360))
-                    else: e.rotate(int(value) % 360)
+                    if(self.dlist.get() == "順時針"): p.rotate(-(int(value) % 360))
+                    else: p.rotate(int(value) % 360)
                 self.croinput.delete(1.0, "end")
                 self.createFlipedImage()
             self.updatePic()
-        def resize(): pass
+        def zoom(event):
+            if(self.vaild and self.chkscale.get()):
+                if(self.zoom.get() > 0): percent = 1+(self.zoom.get() * 0.01)
+                else: percent = 1+(self.zoom.get() * 0.005)
+                new_h, new_w = p.zoom(percent)
+                self.dimension = (new_w, new_h)
+                self.width['state'] = 'normal'; self.height['state'] = 'normal'
+                self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+                self.width.insert("insert", new_h); self.height.insert("insert", new_w)
+                self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+        def resize():
+            if(self.vaild):
+                if(self.width.get("1.0",'end-1c').strip() == '' or self.height.get("1.0",'end-1c').strip() == ''):
+                    showwarning("不合理的輸入尺寸!", "寬度或高度可能有其一並未被填寫或是輸入的值並非數字，請重新再試一次!")
+                    self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+                    self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                else:
+                    self.dimension = (self.width.get("1.0",'end-1c'), self.height.get("1.0",'end-1c'))
+                    p.resize(tuple(map(int,self.dimension)))
+                    self.createFlipedImage()
+                    self.getImageSize()
+            self.updatePic()
+        def check():
+            if(self.vaild):
+                if(self.chkscale.get()):
+                    self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+                    self.zoom['state'] = 'normal'
+                else:
+                    self.width['state'] = 'normal'; self.height['state'] = 'normal'
+                    self.zoom['state'] = 'disabled'
 
         #視窗介面
         self.win.title('OmniImaginer.exe')
@@ -387,7 +426,7 @@ class ui():
         label.place(x=810, y=25)
         #效果處理器(EP)
             #顯示要疊加上去的顏色的方塊
-        self.color_block_label = tk.Label(width=10, text="遮罩顏色預覽:", justify="left").place(x=30, y=250)    
+        self.color_block_label = tk.Label(width=10, text="遮罩顏色預覽:", justify="left").place(x=29, y=250)    
         self.color_block = tk.Label(width=4, bg="black")
         self.color_block.place(x=110, y=250)
             #疊加按鈕
@@ -406,7 +445,6 @@ class ui():
         self.S_slider.place(x=50, y=160)
         self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
         self.V_slider.place(x=50, y=200)
-        
             #侵蝕、膨脹的部分
         self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=erode)
         self.erodebtn.place(x=50, y=280)
@@ -437,20 +475,23 @@ class ui():
         self.display.place(x=321, y=150)
         #方位處理器(PP)
             #縮放的部分
-        self.fixedscale = tk.Checkbutton(text="固定圖片比例")
+        self.chkscale = tk.BooleanVar()
+        self.fixedscale = tk.Checkbutton(text="固定圖片比例", state='disabled', variable=self.chkscale, command=check)
         self.fixedscale.select()
         self.zlabel = tk.Label(text="縮放(?):")
-        self.zoom = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=320, y=203)
+        self.zoom = tk.Scale(from_=-100, to=100, length=200, orient=tk.HORIZONTAL, command=zoom)
+        self.zoom.set(0)
         self.tp = Hovertip(self.zlabel,'當固定比例被開啟時才可用')
         self.relabel = tk.Label(text="自訂尺寸:").place(x=320, y=252)
-        self.height = tk.Text(height=1, width=7, state='disabled')
-        self.x = tk.Label(text="x").place(x=385, y=280)
         self.width = tk.Text(height=1, width=7, state='disabled')
+        self.x = tk.Label(text="x").place(x=385, y=280)
+        self.height = tk.Text(height=1, width=7, state='disabled')
         self.s_confirm = tk.Button(text="設定尺寸", command=resize).place(x=469, y=276)
         self.fixedscale.place(x=423, y=184)
         self.zlabel.place(x=320, y=185)
-        self.height.place(x=325, y=282)
-        self.width.place(x=403, y=282)
+        self.width.place(x=325, y=282)
+        self.zoom.place(x=320, y=203)
+        self.height.place(x=403, y=282)
             #旋轉的部分
         self.rolabel = tk.Label(text="翻轉:").place(x=320, y=308)
         self.n_flipbtn =tk.Radiobutton(text="不翻轉", value=1, command= lambda x = None: flip(0))
