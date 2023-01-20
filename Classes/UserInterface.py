@@ -136,7 +136,9 @@ class ui():
             self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
             self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
-            self.croinput['state'] = 'normal';
+            self.croinput['state'] = 'normal'; self.height.delete(1.0, "end")
+            self.width['state'] = 'normal'; self.height['state'] = 'normal'
+            self.width.delete(1.0, "end"); self.height.delete(1.0, "end")
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
             self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom.set(0);
         else:
@@ -490,7 +492,7 @@ class ui():
         self.width.place(x=325, y=282)
         self.zoom.place(x=320, y=203)
         self.height.place(x=403, y=282)
-            #旋轉的部分
+            #旋轉與翻轉的部分
         self.rolabel = tk.Label(text="翻轉:").place(x=320, y=308)
         self.n_flipbtn =tk.Radiobutton(text="不翻轉", value=1, command= lambda x = None: flip(0))
         self.h_flipbtn = tk.Radiobutton(text="水平翻轉", value=2, command= lambda x = None: flip(1)).place(x=420, y=330)
