@@ -96,7 +96,7 @@ class ui():
             self.updatePic()
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
-            self.clear()
+            self.reset()
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.vaild = False
@@ -111,44 +111,34 @@ class ui():
         cv2.imwrite("Preview.png", image)
         file_name = '範例圖片.png'
         importtype = "範例圖片檔案"
-        self.entryL['state'] = NORMAL
-        self.entryU['state'] = NORMAL
+        self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
         self.vaild = True
-        self.clear()
-        self.entryL['state'] = DISABLED
-        self.entryU['state'] = DISABLED
+        self.reset()
+        self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+        self.getImageSize()
         self.updateID(file_name, importtype)
         self.updatePic()
         self.createFlipedImage()
-        self.getImageSize()
 
-    def clear(self):
-        self.entryL.delete(1.0, "end")
-        self.entryU.delete(1.0, "end")
-        self.btnGD['relief'] = RAISED
-        self.btnGD['state'] = NORMAL
+    def reset(self):
+        self.entryL.delete(1.0, "end"); self.entryU.delete(1.0, "end")
+        self.btnGD['relief'] = RAISED; self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
         self.display['text'] = '尚未導入!!'
-        self.H_slider.set(0)
-        self.S_slider.set(0)
-        self.V_slider.set(0)
+        self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
         self.color_block['bg'] = 'black'
         self.state = False
         self.n_flipbtn.select()
         if(self.vaild):
-            self.openingck['state'] = 'normal'
-            self.closingck['state'] = 'normal'
-            self.gradientck['state'] = 'normal'
-            self.color_block_btn['state'] = 'normal'
-            self.color_block_btn2['state'] = 'disabled'
+            self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+            self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'normal'
+            self.height['state'] = 'normal'; self.width['state'] = 'normal'
         else:
-            self.openingck['state'] = 'disabled'
-            self.closingck['state'] = 'disabled'
-            self.gradientck['state'] = 'disabled'
-            self.color_block_btn['state'] = 'disabled'
-            self.color_block_btn2['state'] = 'disabled'
+            self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
+            self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'disabled'
+            self.height['state'] = 'disabled'; self.width['state'] = 'disabled'
         
     def createPreview(self):
         self.vaild = False
@@ -172,16 +162,13 @@ class ui():
             file_name = 'cloud_img.png'
             importtype = "從雲端硬碟導入"
             self.vaild = True
-            self.entryL['state'] = NORMAL
-            self.entryU['state'] = NORMAL
-            self.clear()
-            self.entryL['state'] = DISABLED
-            self.entryU['state'] = DISABLED
-            self.btnGD['relief'] = SUNKEN
-            self.btnGD['state'] = DISABLED
+            self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
+            self.reset()
+            self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+            self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
+            self.getImageSize()
             self.updateID(file_name, importtype)
             self.createFlipedImage()
-            self.getImageSize()
         else:
             pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -198,15 +185,13 @@ class ui():
             image = cv2.imdecode(np.fromfile(cpath, dtype=np.uint8), -1);
             cv2.imwrite("Preview.png", image)
             self.vaild = True
-            self.entryL['state'] = NORMAL
-            self.entryU['state'] = NORMAL
-            self.clear()
+            self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
+            self.reset()
             self.entryL.insert("insert", cpath)
-            self.entryL['state'] = DISABLED
-            self.entryU['state'] = DISABLED
+            self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+            self.getImageSize()
             self.updateID(file_name, importtype)
             self.createFlipedImage()
-            self.getImageSize()
         self.updatePic()
         
     def openFIleU(self):
@@ -218,17 +203,15 @@ class ui():
             file_name = 'url_image.png'
             importtype = "從URL導入" 
             self.vaild = True
-            self.entryL['state'] = NORMAL
-            self.entryU['state'] = NORMAL
-            self.clear()
+            self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
+            self.reset()
             self.entryU.insert("insert", url)
-            self.entryL['state'] = DISABLED
-            self.entryU['state'] = DISABLED
+            self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+            self.getImageSize()
             self.updateID(file_name, importtype)
             image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1)
             cv2.imwrite("Preview.png", image)
             self.createFlipedImage()
-            self.getImageSize()
         else: 
             if(not url): pass 
             else: showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -258,7 +241,7 @@ class ui():
             print(e)
             img = Image.open('Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
-            self.clear()
+            self.reset()
             showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
@@ -276,6 +259,7 @@ class ui():
         self.dimension = (img.shape[0], img.shape[1])
         output = "%d x %d" % (self.dimension[0], self.dimension[1])
         self.display["text"] = output + ' (px)'
+        self.height.insert("insert", self.dimension[0]); self.width.insert("insert", self.dimension[1])
 
     def open_window(self):
         def hsv(event):
@@ -362,6 +346,7 @@ class ui():
                     if(self.dlist.get() == "順時針"): e.rotate(-(int(value) % 360))
                     else: e.rotate(int(value) % 360)
                 self.croinput.delete(1.0, "end")
+                self.createFlipedImage()
             self.updatePic()
         def resize(): pass
 
@@ -449,20 +434,20 @@ class ui():
         #尺寸動態顯示(SD)
         self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=130)
         self.display = tk.Label(text="尚未導入!!", height=1, width=15)
-        self.display.place(x=325, y=150)
+        self.display.place(x=321, y=150)
         #方位處理器(PP)
             #縮放的部分
-        self.fixedscale = tk.Checkbutton(text="固定比例")
+        self.fixedscale = tk.Checkbutton(text="固定圖片比例")
         self.fixedscale.select()
         self.zlabel = tk.Label(text="縮放(?):")
         self.zoom = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=320, y=203)
         self.tp = Hovertip(self.zlabel,'當固定比例被開啟時才可用')
         self.relabel = tk.Label(text="自訂尺寸:").place(x=320, y=252)
-        self.height = tk.Text(height=1, width=7)
+        self.height = tk.Text(height=1, width=7, state='disabled')
         self.x = tk.Label(text="x").place(x=385, y=280)
-        self.width = tk.Text(height=1, width=7)
+        self.width = tk.Text(height=1, width=7, state='disabled')
         self.s_confirm = tk.Button(text="設定尺寸", command=resize).place(x=469, y=276)
-        self.fixedscale.place(x=450, y=149)
+        self.fixedscale.place(x=423, y=184)
         self.zlabel.place(x=320, y=185)
         self.height.place(x=325, y=282)
         self.width.place(x=403, y=282)
@@ -491,8 +476,8 @@ class ui():
         self.imgname.place(x=688, y=150)
         self.impway.place(x=688, y=170)
         #還原、重作(Un/Redo)
-        self.undo = tk.Button(text="還原上一動作").place(x=865, y=125)
-        self.redo = tk.Button(text="重作上一動作").place(x=865, y=165)
+        self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
+        self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
         #圖片預覽(PoI)
         self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
         img = Image.open('Preview.png')
