@@ -10,9 +10,9 @@ class ep():
         self.G = 0
         self.B = 0
         self.original = cv2.imread("Preview.png")
-        self.rotate_90 = cv2.rotate(self.original, cv2.ROTATE_90_CLOCKWISE)
-        self.rotate_180 = cv2.rotate(self.original, cv2.ROTATE_180)
-        self.rotate_270 = cv2.rotate(self.rotate_180, cv2.ROTATE_90_CLOCKWISE)
+        self.h_filp = None
+        self.v_filp = None
+        self.b_flip = None
 
     def changeHSV(self, h,s,v):
         def _from_rgb(r, g, b):
@@ -32,12 +32,17 @@ class ep():
 
         return "%s" % _from_rgb(r=self.R, g=self.G, b=self.B)
 
-    def updateHSV(self):
+    def updateHSV(self, state):
         image = cv2.imread("Preview.png")
         
-        image[:, :, 0] += self.B
-        image[:, :, 1] += self.G
-        image[:, :, 2] += self.R
+        if(state):
+            image[:, :, 0] += self.B
+            image[:, :, 1] += self.G
+            image[:, :, 2] += self.R
+        else:
+            image[:, :, 0] -= self.B
+            image[:, :, 1] -= self.G
+            image[:, :, 2] -= self.R
 
         cv2.imwrite("Preview.png", image)
 
@@ -75,16 +80,23 @@ class ep():
         out = cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel, iterations=1)
         cv2.imwrite("Preview.png", out)
 
-    def rotate(self, degrees):
-        if(degrees == 0):
+    def flip(self, mode):
+        if(mode == 0):
             cv2.imwrite("Preview.png", self.original)
-        elif(degrees == 90):
-            cv2.imwrite("Preview.png", self.rotate_90)
-        elif(degrees == 180):
-            cv2.imwrite("Preview.png", self.rotate_180)
-        elif(degrees == 270):
-            cv2.imwrite("Preview.png", self.rotate_270)
-        else: pass
+        elif(mode == 1):
+            cv2.imwrite("Preview.png", self.h_flip)
+        elif(mode == 2):
+            cv2.imwrite("Preview.png", self.v_flip)
+        elif(mode == 3):
+            cv2.imwrite("Preview.png", self.b_flip)
+
+    def rotate(self, angle):
+        print(angle)
+        image = cv2.imread("Preview.png")
+        image_center = tuple(np.array(image.shape[1::-1]) / 2)
+        rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+        result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+        cv2.imwrite("Preview.png", result)
 
     #def resize(self):
     #    height = int(UI.ui.height.get("1.0", tk.END))

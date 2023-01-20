@@ -113,13 +113,13 @@ class ui():
         importtype = "範例圖片檔案"
         self.entryL['state'] = NORMAL
         self.entryU['state'] = NORMAL
+        self.vaild = True
         self.clear()
         self.entryL['state'] = DISABLED
         self.entryU['state'] = DISABLED
-        self.vaild = True
         self.updateID(file_name, importtype)
         self.updatePic()
-        self.createRotatedImage()
+        self.createFlipedImage()
         self.getImageSize()
 
     def clear(self):
@@ -129,6 +129,26 @@ class ui():
         self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
         self.display['text'] = '尚未導入!!'
+        self.H_slider.set(0)
+        self.S_slider.set(0)
+        self.V_slider.set(0)
+        self.color_block['bg'] = 'black'
+        self.state = False
+        self.n_flipbtn.select()
+        if(self.vaild):
+            self.openingck['state'] = 'normal'
+            self.closingck['state'] = 'normal'
+            self.gradientck['state'] = 'normal'
+            self.color_block_btn['state'] = 'normal'
+            self.color_block_btn2['state'] = 'disabled'
+            self.croinput['state'] = 'normal'
+        else:
+            self.openingck['state'] = 'disabled'
+            self.closingck['state'] = 'disabled'
+            self.gradientck['state'] = 'disabled'
+            self.color_block_btn['state'] = 'disabled'
+            self.color_block_btn2['state'] = 'disabled'
+            self.croinput['state'] = 'disabled'
         
     def createPreview(self):
         self.vaild = False
@@ -160,7 +180,7 @@ class ui():
             self.btnGD['relief'] = SUNKEN
             self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
-            self.createRotatedImage()
+            self.createFlipedImage()
             self.getImageSize()
         else:
             pass
@@ -169,23 +189,23 @@ class ui():
             
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
-        self.file_path = f.loadFileLocal()
+        cpath = f.loadFileLocal()
         importtype = "從本地端導入"
-        file_name = path.basename(self.file_path)
-        self.entryL['state'] = NORMAL
-        self.entryU['state'] = NORMAL
-        self.clear()
-        self.entryL.insert("insert", self.file_path)
-        self.entryL['state'] = DISABLED
-        self.entryU['state'] = DISABLED
-        if(self.file_path == ""): 
-            self.file_path = "None"
+        file_name = path.basename(cpath)
+        if(cpath == ""): 
+            pass
         else: 
-            image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1); print(self.file_path)
+            image = cv2.imdecode(np.fromfile(cpath, dtype=np.uint8), -1);
             cv2.imwrite("Preview.png", image)
             self.vaild = True
+            self.entryL['state'] = NORMAL
+            self.entryU['state'] = NORMAL
+            self.clear()
+            self.entryL.insert("insert", cpath)
+            self.entryL['state'] = DISABLED
+            self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
-            self.createRotatedImage()
+            self.createFlipedImage()
             self.getImageSize()
         self.updatePic()
         
@@ -205,16 +225,17 @@ class ui():
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
-        else: 
-            self.updateID(file_name, importtype)
             image = cv2.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1)
             cv2.imwrite("Preview.png", image)
-            self.createRotatedImage()
+            self.createFlipedImage()
             self.getImageSize()
+        else: 
+            if(not url): pass 
+            else: showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
 
     def updateID(self, filename, way):
-        if(len(filename) > 13): filename = filename[:13] + '...'
+        if(len(filename) > 15): filename = filename[:15] + '...'
         self.imgname['text'] = filename
         self.impway['text'] = way
         pass
@@ -243,73 +264,104 @@ class ui():
         self.preview.config(image=dispic)
         #Get picture size and scale it with the preview window (420, 300)
 
-    def createRotatedImage(self):
+    def createFlipedImage(self):
         e.original = cv2.imread("Preview.png")
-        e.rotate_90 = cv2.rotate(e.original, cv2.ROTATE_90_CLOCKWISE)
-        e.rotate_180 = cv2.rotate(e.original, cv2.ROTATE_180)
-        e.rotate_270 = cv2.rotate(e.rotate_180, cv2.ROTATE_90_CLOCKWISE)
+        e.h_flip = cv2.flip(e.original, 1)
+        e.v_flip = cv2.flip(e.original, 0)
+        e.b_flip = cv2.flip(e.original, -1)
+        self.n_flipbtn.select()
 
     def getImageSize(self):
         img = cv2.imread("Preview.png")
         self.dimension = (img.shape[0], img.shape[1])
         output = "%d x %d" % (self.dimension[0], self.dimension[1])
-        self.display["text"] = output
+        self.display["text"] = output + ' (px)'
 
     def open_window(self):
         def hsv(event):
             self.color_block['bg'] = e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
         def update():
-            e.updateHSV()
-            self.createRotatedImage()
+            if(self.vaild):
+                self.state = not self.state
+                e.updateHSV(self.state)
+                if(self.state):
+                    self.color_block_btn['state'] = 'disabled'
+                    self.color_block_btn2['state'] = 'normal'
+                    self.H_slider['state'] = 'disabled'
+                    self.S_slider['state'] = 'disabled'
+                    self.V_slider['state'] = 'disabled'
+                else:
+                    self.color_block_btn2['state'] = 'disabled'
+                    self.color_block_btn['state'] = 'normal'
+                    self.H_slider['state'] = 'normal'
+                    self.S_slider['state'] = 'normal'
+                    self.V_slider['state'] = 'normal'
+                self.createFlipedImage()
             self.updatePic()
         def erode():
-            e.erode()
-            self.createRotatedImage()
-            self.edv.set(str(int(self.edv.get())+1))
+            if(self.vaild):
+                e.erode()
+                self.createFlipedImage()
+                self.edv.set(str(int(self.edv.get())+1))
             self.updatePic()
         def dilate():
-            e.dilate()
-            self.createRotatedImage()
-            self.edv.set(str(int(self.edv.get())-1))
+            if(self.vaild):
+                e.dilate()
+                self.createFlipedImage()
+                self.edv.set(str(int(self.edv.get())-1))
             self.updatePic()
         def opening():
-            if(b1.get()):
-                self.accessOriginal('Set')
-                e.opening()
-                self.gradientck['state'] = 'disabled'
-                self.closingck['state'] = 'disabled'
-            else:
-                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
-                self.gradientck['state'] = 'normal'
-                self.closingck['state'] = 'normal'
-            self.createRotatedImage()
+            if(self.vaild):
+                if(b1.get()):
+                    self.accessOriginal('Set')
+                    e.opening()
+                    self.gradientck['state'] = 'disabled'
+                    self.closingck['state'] = 'disabled'
+                else:
+                    cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                    self.gradientck['state'] = 'normal'
+                    self.closingck['state'] = 'normal'
+                self.createFlipedImage()
             self.updatePic()
         def closing():
-            if(b2.get()):
-                self.accessOriginal('Set')
-                e.closing()
-                self.gradientck['state'] = 'disabled'
-                self.openingck['state'] = 'disabled'
-            else:
-                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
-                self.gradientck['state'] = 'normal'
-                self.openingck['state'] = 'normal'
-            self.createRotatedImage()
+            if(self.vaild):
+                if(b2.get()):
+                    self.accessOriginal('Set')
+                    e.closing()
+                    self.gradientck['state'] = 'disabled'
+                    self.openingck['state'] = 'disabled'
+                else:
+                    cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                    self.gradientck['state'] = 'normal'
+                    self.openingck['state'] = 'normal'
+                self.createFlipedImage()
             self.updatePic()
         def gradient():
-            if(b3.get()):
-                self.accessOriginal('Set')
-                e.gradient()
-                self.openingck['state'] = 'disabled'
-                self.closingck['state'] = 'disabled'
-            else:
-                cv2.imwrite("Preview.png", self.accessOriginal('Get'))
-                self.openingck['state'] = 'normal'
-                self.closingck['state'] = 'normal'
-            self.createRotatedImage()
+            if(self.vaild):
+                if(b3.get()):
+                    self.accessOriginal('Set')
+                    e.gradient()
+                    self.openingck['state'] = 'disabled'
+                    self.closingck['state'] = 'disabled'
+                else:
+                    cv2.imwrite("Preview.png", self.accessOriginal('Get'))
+                    self.openingck['state'] = 'normal'
+                    self.closingck['state'] = 'normal'
+                self.createFlipedImage()
             self.updatePic()
-        def rotate(value):
-            e.rotate(value)
+        def flip(mode):
+            if(self.vaild): e.flip(mode)
+            self.updatePic()
+        def rotate():
+            if(self.vaild):
+                value = self.croinput.get('1.0', 'end-1c').strip()
+                f = True
+                for i in value:
+                    if(not i.isdigit()): f = False
+                if(f): 
+                    if(self.dlist.get() == "順時針"): e.rotate(-(int(value) % 360))
+                    else: e.rotate(int(value) % 360)
+                self.croinput.delete(1.0, "end")
             self.updatePic()
         def resize(): pass
 
@@ -350,21 +402,25 @@ class ui():
         label.place(x=810, y=25)
         #效果處理器(EP)
             #顯示要疊加上去的顏色的方塊
-        self.color_block_label = tk.Label(width=10, text="顏色預覽", justify="left").place(x=50, y=120)    
-        self.color_block = tk.Label(width=4, bg="white")
-        self.color_block.place(x=120, y=120)
+        self.color_block_label = tk.Label(width=10, text="遮罩顏色預覽:", justify="left").place(x=30, y=250)    
+        self.color_block = tk.Label(width=4, bg="black")
+        self.color_block.place(x=110, y=250)
             #疊加按鈕
-        self.color_block_btn = tk.Button(width=20, text="疊加入預覽圖片", justify="left", command=update).place(x=200, y=120)
+        self.state = False
+        self.color_block_btn = tk.Button(width=5, text="疊加", state='disabled', justify="left", command=update)
+        self.color_block_btn2 = tk.Button(width=5, text="撤銷", state='disabled', justify="left", command=update)
+        self.color_block_btn.place(x=155, y=247)    
+        self.color_block_btn2.place(x=205, y=247)     
             #HSV滑桿的部分
-        self.H_label = tk.Label(text="色相:").place(x=15, y=169)
-        self.S_label = tk.Label(text="飽和度:").place(x=4, y=209)
-        self.V_label = tk.Label(text="明度:").place(x=15, y=249)
+        self.H_label = tk.Label(text="色相:").place(x=15, y=139)
+        self.S_label = tk.Label(text="飽和度:").place(x=4, y=179)
+        self.V_label = tk.Label(text="明度:").place(x=15, y=219)
         self.H_slider = tk.Scale(from_=0, to=179, length=200, orient=tk.HORIZONTAL, command=hsv)
-        self.H_slider.place(x=50, y=150)
+        self.H_slider.place(x=50, y=120)
         self.S_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
-        self.S_slider.place(x=50, y=190)
+        self.S_slider.place(x=50, y=160)
         self.V_slider = tk.Scale(from_=0, to=255, length=200, orient=tk.HORIZONTAL, command=hsv)
-        self.V_slider.place(x=50, y=230)
+        self.V_slider.place(x=50, y=200)
         
             #侵蝕、膨脹的部分
         self.erodebtn = tk.Button(text="侵蝕++", height=2, width=7, command=erode)
@@ -377,64 +433,66 @@ class ui():
         self.edvalue = tk.Entry(width=4, state=DISABLED, textvariable=self.edv)
         self.edvalue.place(x=200, y=344)
         b1 = tk.BooleanVar(); b2 = tk.BooleanVar(); b3 = tk.BooleanVar()
-        self.openingck = tk.Checkbutton(text="去白點", variable=b1, command=opening)
+        self.openingck = tk.Checkbutton(text="去白點", state='disabled', variable=b1, command=opening)
         self.openingck.place(x=125, y=285)
-        self.closingck = tk.Checkbutton(text="去黑點", variable=b2, command=closing)
+        self.closingck = tk.Checkbutton(text="去黑點", state='disabled', variable=b2, command=closing)
         self.closingck.place(x=195, y=285)
-        self.gradientck = tk.Checkbutton(text="只顯示輪廓", variable=b3, command=gradient)
+        self.gradientck = tk.Checkbutton(text="只顯示輪廓", state='disabled', variable=b3, command=gradient)
         self.gradientck.place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
-        self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"]).place(x=85, y=385)
+        self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"])
+        self.clist.current(0)
+        self.clist.place(x=85, y=385)
             #灰階的部分
         self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
         #尺寸動態顯示(SD)
-        self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=150)
+        self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=130)
         self.display = tk.Label(text="尚未導入!!", height=1, width=15)
-        self.display.place(x=325, y=170)
+        self.display.place(x=325, y=150)
         #方位處理器(PP)
             #縮放的部分
         self.fixedscale = tk.Checkbutton(text="固定比例")
         self.fixedscale.select()
-        self.zlabel = tk.Label(text="縮放:").place(x=320, y=195)
-        self.zoom = tk.Scale(from_=1, to=100, length=160, orient=tk.HORIZONTAL).place(x=320, y=215)
-        self.Z_entry = tk.Entry(width=4, state=DISABLED).place(x=490, y=235)
-        self.ztt = tk.Button(text="?", relief=tk.SUNKEN, height=1)
-        self.tp = Hovertip(self.ztt,'當固定比例被開啟時才可用')
-        self.relabel = tk.Label(text="自訂尺寸縮放:").place(x=320, y=260)
+        self.zlabel = tk.Label(text="縮放(?):")
+        self.zoom = tk.Scale(from_=1, to=100, length=200, orient=tk.HORIZONTAL).place(x=320, y=203)
+        self.tp = Hovertip(self.zlabel,'當固定比例被開啟時才可用')
+        self.relabel = tk.Label(text="自訂尺寸:").place(x=320, y=252)
         self.height = tk.Text(height=1, width=7)
-        self.height.place(x=325, y=285)
-        self.x = tk.Label(text="x").place(x=385, y=283)
+        self.x = tk.Label(text="x").place(x=385, y=280)
         self.width = tk.Text(height=1, width=7)
-        self.width.place(x=403, y=285)
-        self.reset = tk.Button(text="設定尺寸", command=resize).place(x=467, y=280)
-        self.fixedscale.place(x=450, y=169)
-        self.ztt.place(x=360, y=194)
+        self.s_confirm = tk.Button(text="設定尺寸", command=resize).place(x=469, y=276)
+        self.fixedscale.place(x=450, y=149)
+        self.zlabel.place(x=320, y=185)
+        self.height.place(x=325, y=282)
+        self.width.place(x=403, y=282)
             #旋轉的部分
-        self.rolabel = tk.Label(text="預設旋轉:").place(x=320, y=308)
-        self.zero =tk.Radiobutton(text="不旋轉", value=1, command= lambda x = None: rotate(0))
-        self.nighty = tk.Radiobutton(text="旋轉90度", value=2, command= lambda x = None: rotate(90)).place(x=420, y=330)
-        self.horiflip = tk.Radiobutton(text="旋轉180度", value=3, command= lambda x = None: rotate(180)).place(x=320, y=355)
-        self.twoseventy = tk.Radiobutton(text="旋轉270度", value=4, command= lambda x = None: rotate(270)).place(x=420, y=355)
-        self.crolabel = tk.Label(text="自訂旋轉角度:").place(x=320, y=385)
-        self.croinput = tk.Text(height=1, width=4).place(x=405, y=387)
-        self.degree = tk.Label(text="度").place(x=435, y=385)
-        self.dlist = ttk.Combobox(width=7, state="readonly", value=["順時針", "逆時針"])
+        self.rolabel = tk.Label(text="翻轉:").place(x=320, y=308)
+        self.n_flipbtn =tk.Radiobutton(text="不翻轉", value=1, command= lambda x = None: flip(0))
+        self.h_flipbtn = tk.Radiobutton(text="水平翻轉", value=2, command= lambda x = None: flip(1)).place(x=420, y=330)
+        self.v_flipbtn = tk.Radiobutton(text="垂直翻轉", value=3, command= lambda x = None: flip(2)).place(x=320, y=355)
+        self.b_flipbtn = tk.Radiobutton(text="水平+垂直", value=4, command= lambda x = None: flip(3)).place(x=420, y=355)
+        self.crolabel = tk.Label(text="旋轉:").place(x=320, y=385)
+        self.croinput = tk.Text(height=1, width=4, state='disabled')
+        self.degree = tk.Label(text="度").place(x=385, y=385)
+        self.dlist = ttk.Combobox(width=5, state="readonly", value=["順時針", "逆時針"])
+        self.d_confirm = tk.Button(text="設定旋轉", command=rotate).place(x=469, y=382)
         self.dlist.current(0)
-        self.zero.select()
-        self.zero.place(x=320, y=330)
-        self.dlist.place(x=455, y=385)
+        self.n_flipbtn.select()
+        self.n_flipbtn.place(x=320, y=330)
+        self.croinput.place(x=355, y=388)
+        self.dlist.place(x=405, y=386)
         #圖片資訊顯示(ID)
-        self.idlabel = tk.Label(text="圖片資訊:").place(x=600, y=150)
-        self.imgnamedis = tk.Label(text="檔案名稱:").place(x=630, y=170)
+        self.idlabel = tk.Label(text="圖片資訊:").place(x=600, y=130)
+        self.imgnamedis = tk.Label(text="檔案名稱:").place(x=630, y=150)
         self.imgname = tk.Label(text="尚未導入!!")
-        self.impwaydis = tk.Label(text="導入方式:").place(x=630, y=190)
+        self.impwaydis = tk.Label(text="導入方式:").place(x=630, y=170)
         self.impway = tk.Label(text="尚未導入!!")
-        self.imgname.place(x=688, y=170)
-        self.impway.place(x=688, y=190)
+        self.imgname.place(x=688, y=150)
+        self.impway.place(x=688, y=170)
         #還原、重作(Un/Redo)
-        self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
-        self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
+        self.undo = tk.Button(text="還原上一動作").place(x=865, y=125)
+        self.redo = tk.Button(text="重作上一動作").place(x=865, y=165)
         #圖片預覽(PoI)
         self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
         img = Image.open('Preview.png')
