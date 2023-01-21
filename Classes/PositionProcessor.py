@@ -1,6 +1,4 @@
-﻿import tkinter as tk
-from PIL import Image,ImageDraw,ImageFont
-import cv2
+﻿import cv2
 import numpy as np
 
 class pp():
@@ -22,7 +20,6 @@ class pp():
         width = int(image.shape[1] * percent)
         height = int(image.shape[0] * percent)
         dim = (width, height)
-        #resized = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
         return dim
 
     def resize(self, dim):

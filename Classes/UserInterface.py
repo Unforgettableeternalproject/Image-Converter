@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 import tkinter.font as tkFont
 from idlelib.tooltip import Hovertip
-from tkinter.messagebox import * 
+from tkinter.messagebox import showinfo, showerror, showwarning, askyesno, askokcancel
 import requests
 import Classes.FileManager as FM
 import Classes.EffectProcessor as EP
@@ -94,15 +94,17 @@ class ui():
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
         if(ans):
+            self.vaild = False
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.reset()
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
             self.status = self.chknet()
-            self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
+            self.sva.set('網路狀態: {}'.format("線上" if self.status else "離線"))
             if(not self.status): self.dstatus['fg'] = "red"
             else: self.dstatus['fg'] = 'green'
+            self.display["text"] = "尚未導入!!"
             self.createPreview()
             self.updatePic()
         else: pass #Not Yet Done
@@ -128,20 +130,21 @@ class ui():
         self.display['text'] = '尚未導入!!'
         self.color_block['bg'] = 'black'
         self.state = False
+        self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
+        self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
+        self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect()
+        self.width['state'] = 'normal'; self.height['state'] = 'normal'
+        self.width.delete(1.0, "end"); self.height.delete(1.0, "end")
+        self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+        self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom['state'] = 'normal'; self.zoom.set(0);
+        self.edv.set('0')
         self.n_flipbtn.select()
         self.dlist.current(0)
         self.clist.current(0)
         if(self.vaild):
             self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
-            self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect();
-            self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
-            self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
-            self.width['state'] = 'normal'; self.height['state'] = 'normal'
-            self.width.delete(1.0, "end"); self.height.delete(1.0, "end")
-            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
-            self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom['state'] = 'normal'; self.zoom.set(0);
             self.getImageSize()
             self.createFlipedImage()
             self.createFilteredImage()
@@ -149,7 +152,6 @@ class ui():
             self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'disabled'
-            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
             self.fixedscale.select(); self.fixedscale['state'] = 'disabled'
         
     def createPreview(self):
@@ -180,7 +182,6 @@ class ui():
             self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
         else:
-            pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
             
@@ -371,12 +372,14 @@ class ui():
         def rotate():
             if(self.vaild):
                 value = self.croinput.get('1.0', 'end-1c').strip()
-                f = True
+                f = True if(value != '') else False
                 for i in value:
                     if(not i.isdigit()): f = False
                 if(f): 
                     if(self.dlist.get() == "順時針"): p.rotate(-(int(value) % 360))
                     else: p.rotate(int(value) % 360)
+                else:
+                    showwarning("不合理的輸入角度!", "旋轉角度必須要為整數，請再試一次!")
                 self.croinput.delete(1.0, "end")
                 self.createFilteredImage()
                 self.createFlipedImage()
@@ -393,8 +396,13 @@ class ui():
                 self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         def resize():
             if(self.vaild):
-                if(self.width.get("1.0",'end-1c').strip() == '' or self.height.get("1.0",'end-1c').strip() == ''):
-                    showwarning("不合理的輸入尺寸!", "寬度或高度可能有其一並未被填寫或是輸入的值並非數字，請重新再試一次!")
+                f = True if(self.width.get("1.0",'end-1c').strip() != '' and self.height.get("1.0",'end-1c').strip() != '') else False
+                for i in self.width.get("1.0",'end-1c').strip():
+                    if(not i.isdigit()): f = False
+                for i in self.height.get("1.0",'end-1c').strip():
+                    if(not i.isdigit()): f = False
+                if(not f):
+                    showwarning("不合理的輸入尺寸!", "寬度或高度可能有其一並未被填寫或是輸入的值並非整數，請重新再試一次!")
                     self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                 else:
@@ -411,6 +419,8 @@ class ui():
                     self.zoom['state'] = 'normal'
                 else:
                     self.width['state'] = 'normal'; self.height['state'] = 'normal'
+                    self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+                    self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                     self.zoom['state'] = 'disabled'
 
         #視窗介面
@@ -438,7 +448,7 @@ class ui():
         promptC = tk.Label(text="或者...從雲端導入", bg="grey", fg="white", height=2, width=20)
         self.btnGD = tk.Button(text="Google Drive", image=GDicon, command=self.openFileGD)
         self.sva = tk.StringVar()
-        self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
+        self.sva.set('網路狀態: {}'.format("線上" if self.status else "離線"))
         self.dstatus = tk.Label(textvariable = self.sva, fg="green")
         if(not self.status): self.dstatus['fg'] = "red"
         promptC.place(x=600, y=15)

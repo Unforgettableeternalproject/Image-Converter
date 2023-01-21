@@ -200,9 +200,11 @@ class fm():
             if (len(item_list) == 0): 
                 showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
                 promptD.destroy()
+                return False
         except:
             showerror('檔案錯誤', '存取雲端硬碟時出現錯誤!')
             promptD.destroy()
+            return False
         display = [x['name'] for x in item_list]
         file_id = [x['id'] for x in item_list]
         Cs = tk.Frame(promptD, width=200, height=200)
@@ -334,7 +336,7 @@ class fm():
             if self.creds and self.creds.expired and self.creds.refresh_token:
                 self.creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
+                flow = InstalledAppFlow.from_client_secrets_file(   
                     'credentials.json', SCOPES)
                 self.creds = flow.run_local_server(port=0)
         service = build('drive', 'v3', credentials=self.creds)
