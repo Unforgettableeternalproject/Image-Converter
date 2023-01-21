@@ -94,18 +94,17 @@ class ui():
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
         if(ans):
-            self.createPreview()
-            self.updatePic()
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.reset()
             self.entryL['state'] = DISABLED
             self.entryU['state'] = DISABLED
-            self.vaild = False
             self.status = self.chknet()
             self.sva.set('Network Status: {}'.format("Online" if self.status else "Offline"))
             if(not self.status): self.dstatus['fg'] = "red"
             else: self.dstatus['fg'] = 'green'
+            self.createPreview()
+            self.updatePic()
         else: pass #Not Yet Done
 
     def example(self):
@@ -131,16 +130,21 @@ class ui():
         self.state = False
         self.n_flipbtn.select()
         self.dlist.current(0)
+        self.clist.current(0)
         if(self.vaild):
             self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+            self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect();
             self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
             self.H_slider.set(0); self.S_slider.set(0); self.V_slider.set(0)
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
-            self.croinput['state'] = 'normal'; self.height.delete(1.0, "end")
+            self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
             self.width['state'] = 'normal'; self.height['state'] = 'normal'
             self.width.delete(1.0, "end"); self.height.delete(1.0, "end")
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
-            self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom.set(0);
+            self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom['state'] = 'normal'; self.zoom.set(0);
+            self.getImageSize()
+            self.createFlipedImage()
+            self.createFilteredImage()
         else:
             self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
@@ -174,9 +178,7 @@ class ui():
             self.reset()
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
-            self.getImageSize()
             self.updateID(file_name, importtype)
-            self.createFlipedImage()
         else:
             pass
             showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -197,9 +199,7 @@ class ui():
             self.reset()
             self.entryL.insert("insert", cpath)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
-            self.getImageSize()
             self.updateID(file_name, importtype)
-            self.createFlipedImage()
         self.updatePic()
         
     def openFIleU(self):
@@ -215,9 +215,7 @@ class ui():
             self.reset()
             self.entryU.insert("insert", url)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
-            self.getImageSize()
             self.updateID(file_name, importtype)
-            self.createFlipedImage()
         else: 
             if(not url): pass 
             else: showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
@@ -254,11 +252,22 @@ class ui():
         #Get picture size and scale it with the preview window (420, 300)
 
     def createFlipedImage(self):
-        p.original = cv2.imread("Preview.png")
-        p.h_flip = cv2.flip(p.original, 1)
-        p.v_flip = cv2.flip(p.original, 0)
-        p.b_flip = cv2.flip(p.original, -1)
+        p.filps[0] = cv2.imread("Preview.png")
+        p.filps[1] = cv2.flip(p.filps[0], 1)
+        p.filps[2] = cv2.flip(p.filps[0], 0)
+        p.filps[3] = cv2.flip(p.filps[0], -1)
         self.n_flipbtn.select()
+
+    def createFilteredImage(self):
+        kernel_1d = cv2.getGaussianKernel(5, 0)
+        e.filters[0] = cv2.imread("Preview.png")
+        e.filters[1] = cv2.medianBlur(e.filters[0], 5)
+        e.filters[2] = cv2.sepFilter2D(e.filters[0], -1, kernel_1d, kernel_1d)
+        blur_img = cv2.GaussianBlur(e.filters[0], (0, 0), 50)
+        e.filters[3] = cv2.addWeighted(e.filters[0], 1.5, blur_img, -0.5, 0)
+        e.filters[5] = cv2.cvtColor(e.filters[0], cv2.COLOR_BGR2GRAY)
+        e.filters[4] = cv2.adaptiveThreshold(e.filters[5], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+        self.clist.current(0)
 
     def getImageSize(self):
         img = cv2.imread("Preview.png")
@@ -290,17 +299,20 @@ class ui():
                     self.H_slider['state'] = 'normal'
                     self.S_slider['state'] = 'normal'
                     self.V_slider['state'] = 'normal'
+                self.createFilteredImage()
                 self.createFlipedImage()
             self.updatePic()
         def erode():
             if(self.vaild):
                 e.erode()
+                self.createFilteredImage()
                 self.createFlipedImage()
                 self.edv.set(str(int(self.edv.get())+1))
             self.updatePic()
         def dilate():
             if(self.vaild):
                 e.dilate()
+                self.createFilteredImage()
                 self.createFlipedImage()
                 self.edv.set(str(int(self.edv.get())-1))
             self.updatePic()
@@ -315,6 +327,7 @@ class ui():
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.gradientck['state'] = 'normal'
                     self.closingck['state'] = 'normal'
+                self.createFilteredImage()
                 self.createFlipedImage()
             self.updatePic()
         def closing():
@@ -328,6 +341,7 @@ class ui():
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.gradientck['state'] = 'normal'
                     self.openingck['state'] = 'normal'
+                self.createFilteredImage()
                 self.createFlipedImage()
             self.updatePic()
         def gradient():
@@ -341,10 +355,18 @@ class ui():
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.openingck['state'] = 'normal'
                     self.closingck['state'] = 'normal'
+                self.createFilteredImage()
+                self.createFlipedImage()
+            self.updatePic()
+        def filter():
+            if(self.vaild):
+                e.filter(self.clist.get())
                 self.createFlipedImage()
             self.updatePic()
         def flip(mode):
-            if(self.vaild): p.flip(mode)
+            if(self.vaild): 
+                p.flip(mode)
+                self.createFilteredImage()
             self.updatePic()
         def rotate():
             if(self.vaild):
@@ -356,6 +378,7 @@ class ui():
                     if(self.dlist.get() == "順時針"): p.rotate(-(int(value) % 360))
                     else: p.rotate(int(value) % 360)
                 self.croinput.delete(1.0, "end")
+                self.createFilteredImage()
                 self.createFlipedImage()
             self.updatePic()
         def zoom(event):
@@ -377,6 +400,7 @@ class ui():
                 else:
                     self.dimension = (self.width.get("1.0",'end-1c'), self.height.get("1.0",'end-1c'))
                     p.resize(tuple(map(int,self.dimension)))
+                    self.createFilteredImage()
                     self.createFlipedImage()
                     self.getImageSize()
             self.updatePic()
@@ -464,11 +488,10 @@ class ui():
         self.gradientck.place(x=148, y=310)
             #濾波器的部分
         self.clabel = tk.Label(text="其他效果:").place(x=25, y=385)
-        self.clist = ttk.Combobox(width=17, state="readonly", value=["無", "Boxblur", "Blur", "Medianblur", "Bilateral", "Gaussian"])
+        self.clist = ttk.Combobox(width=14, state="readonly", value=["無", "中值降噪", "高斯模糊", "銳利化", "自適應二值化", "灰階"])
         self.clist.current(0)
         self.clist.place(x=85, y=385)
-            #灰階的部分
-        self.gsck = tk.Checkbutton(text="灰階").place(x=235, y=383)
+        self.c_confirm = tk.Button(width=5, text="應用", command=filter).place(x=213, y=381)
         #尺寸動態顯示(SD)
         self.distext = tk.Label(text="原始圖片尺寸:").place(x=320, y=130)
         self.display = tk.Label(text="尚未導入!!", height=1, width=15)

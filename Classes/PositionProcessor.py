@@ -5,20 +5,10 @@ import numpy as np
 
 class pp():
     def __init__(self):
-        self.original = cv2.imread("Preview.png")
-        self.h_filp = None
-        self.v_filp = None
-        self.b_flip = None
+        self.filps = [None, None, None, None]
 
     def flip(self, mode):
-        if(mode == 0):
-            cv2.imwrite("Preview.png", self.original)
-        elif(mode == 1):
-            cv2.imwrite("Preview.png", self.h_flip)
-        elif(mode == 2):
-            cv2.imwrite("Preview.png", self.v_flip)
-        elif(mode == 3):
-            cv2.imwrite("Preview.png", self.b_flip)
+        cv2.imwrite("Preview.png", self.filps[mode])
 
     def rotate(self, angle):
         image = cv2.imread("Preview.png")

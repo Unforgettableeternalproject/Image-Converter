@@ -1,5 +1,4 @@
 ﻿import tkinter as tk
-from PIL import Image,ImageDraw,ImageFont
 import cv2
 import numpy as np
 
@@ -9,6 +8,7 @@ class ep():
         self.R = 0
         self.G = 0
         self.B = 0
+        self.filters = [None, None, None, None, None, None]
 
     def changeHSV(self, h,s,v):
         def _from_rgb(r, g, b):
@@ -75,3 +75,9 @@ class ep():
         kernel = np.ones((5,5), np.uint8)
         out = cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel, iterations=1)
         cv2.imwrite("Preview.png", out)
+
+    def filter(self, mode):
+        clist = ["無", "中值降噪", "高斯模糊", "銳利化", "自適應二值化", "灰階"]
+        if(mode not in clist): pass
+        else:
+            cv2.imwrite("Preview.png", self.filters[clist.index(mode)])
