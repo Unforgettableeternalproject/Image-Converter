@@ -7,6 +7,7 @@ import tkinter.font as tkFont
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import showinfo, showerror, showwarning, askyesno, askokcancel
 import requests
+import subprocess
 import Classes.FileManager as FM
 import Classes.EffectProcessor as EP
 import Classes.PositionProcessor as PP
@@ -94,7 +95,8 @@ class ui():
     def resetall(self):
         ans = askokcancel('你確定嗎?!', '您將要重置Omniimaginer的所有動作，此動作無法返回!', icon = 'error')
         if(ans):
-            self.vaild = False
+            self.createPreview()
+            self.updatePic()
             self.entryL['state'] = NORMAL
             self.entryU['state'] = NORMAL
             self.reset()
@@ -105,8 +107,6 @@ class ui():
             if(not self.status): self.dstatus['fg'] = "red"
             else: self.dstatus['fg'] = 'green'
             self.display["text"] = "尚未導入!!"
-            self.createPreview()
-            self.updatePic()
         else: pass #Not Yet Done
 
     def example(self):
@@ -135,7 +135,6 @@ class ui():
         self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect()
         self.width['state'] = 'normal'; self.height['state'] = 'normal'
         self.width.delete(1.0, "end"); self.height.delete(1.0, "end")
-        self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         self.fixedscale['state'] = 'normal'; self.fixedscale.select(); self.zoom['state'] = 'normal'; self.zoom.set(0);
         self.edv.set('0')
         self.n_flipbtn.select()
@@ -146,6 +145,7 @@ class ui():
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
             self.getImageSize()
+            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
             self.createFlipedImage()
             self.createFilteredImage()
         else:
@@ -153,6 +153,7 @@ class ui():
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'disabled'
             self.fixedscale.select(); self.fixedscale['state'] = 'disabled'
+            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         
     def createPreview(self):
         self.vaild = False
@@ -182,7 +183,8 @@ class ui():
             self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
         else:
-            showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
+            pass
+            #showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
         self.updatePic()
             
     def openFileL(self):
@@ -275,6 +277,7 @@ class ui():
         self.dimension = (img.shape[1], img.shape[0])
         output = "%d x %d" % (self.dimension[0], self.dimension[1])
         self.display["text"] = output + ' (px)'
+        self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
         if(self.chkscale.get()): self.zoom.set(0)
         else: 
             self.zoom['state'] = 'normal'
@@ -388,11 +391,11 @@ class ui():
             if(self.vaild and self.chkscale.get()):
                 if(self.zoom.get() > 0): percent = 1+(self.zoom.get() * 0.01)
                 else: percent = 1+(self.zoom.get() * 0.005)
-                new_h, new_w = p.zoom(percent)
+                new_w, new_h = p.zoom(percent)
                 self.dimension = (new_w, new_h)
                 self.width['state'] = 'normal'; self.height['state'] = 'normal'
                 self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
-                self.width.insert("insert", new_h); self.height.insert("insert", new_w)
+                self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                 self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         def resize():
             if(self.vaild):
@@ -405,9 +408,14 @@ class ui():
                     showwarning("不合理的輸入尺寸!", "寬度或高度可能有其一並未被填寫或是輸入的值並非整數，請重新再試一次!")
                     self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                elif(int(self.width.get("1.0",'end-1c')) > 5000 or int(self.height.get("1.0",'end-1c')) > 5000):
+                    showwarning("輸入尺寸超出限制!", "寬度或高度可能有其一超出了此應用程式的限制(Max:5000x5000 px)，請重新再試一次!")
+                    self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+                    self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                 else:
                     self.dimension = (self.width.get("1.0",'end-1c'), self.height.get("1.0",'end-1c'))
                     p.resize(tuple(map(int,self.dimension)))
+                    self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.createFilteredImage()
                     self.createFlipedImage()
                     self.getImageSize()
