@@ -11,12 +11,14 @@ import subprocess
 import Classes.FileManager as FM
 import Classes.EffectProcessor as EP
 import Classes.PositionProcessor as PP
+import Classes.StepRecord as SR
 import numpy as np
 import cv2
 
 f = FM.fm()
 e = EP.ep()
 p = PP.pp()
+s = SR.sr()
 
 class ui():
 
@@ -118,12 +120,12 @@ class ui():
         self.vaild = True
         self.reset()
         self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
-        self.getImageSize()
         self.updateID(file_name, importtype)
         self.updatePic()
         self.createFlipedImage()
 
     def reset(self):
+        s.reset()
         self.entryL.delete(1.0, "end"); self.entryU.delete(1.0, "end")
         self.btnGD['relief'] = RAISED; self.btnGD['state'] = NORMAL
         self.updateID('尚未導入!!', '尚未導入!!')
@@ -140,12 +142,14 @@ class ui():
         self.n_flipbtn.select()
         self.dlist.current(0)
         self.clist.current(0)
+        self.effects = 0
         if(self.vaild):
             self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
             self.getImageSize()
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+            self.undo['state'] = 'normal'; self.redo['state'] = 'disabled'
             self.createFlipedImage()
             self.createFilteredImage()
         else:
@@ -153,6 +157,7 @@ class ui():
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'disabled'
             self.fixedscale.select(); self.fixedscale['state'] = 'disabled'
+            self.undo['state'] = 'disabled'; self.redo['state'] = 'disabled'
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         
     def createPreview(self):
@@ -230,11 +235,10 @@ class ui():
         self.impway['text'] = way
         pass
 
-    def updatePic(self):
+    def updatePic(self, skip=False):
         def cv_imread(file_path):
             cv_pic = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
             return cv_pic
-        
         try:
             openpic = cv_imread("Preview.png")
             realpic = Image.open("Preview.png")
@@ -252,8 +256,9 @@ class ui():
             showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
+        if(not skip): s.add_act((self.vaild, self.H_slider.get(), self.S_slider.get(), self.V_slider.get(), self.state, self.edv.get(), self.effects, self.clist.current(), self.chkscale.get(), self.zoom.get(), self.width.get("1.0",'end-1c').strip(), self.height.get("1.0",'end-1c').strip(), self.radio.get(), self.dlist.current()))
         #Get picture size and scale it with the preview window (420, 300)
-
+        
     def createFlipedImage(self):
         p.filps[0] = cv2.imread("Preview.png")
         p.filps[1] = cv2.flip(p.filps[0], 1)
@@ -322,12 +327,14 @@ class ui():
             self.updatePic()
         def opening():
             if(self.vaild):
-                if(b1.get()):
+                if(b1.get()): #被選取時
+                    self.effects = 1
                     self.accessOriginal('Set')
                     e.opening()
                     self.gradientck['state'] = 'disabled'
                     self.closingck['state'] = 'disabled'
-                else:
+                else: #被取消選取時
+                    self.effects = 0
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.gradientck['state'] = 'normal'
                     self.closingck['state'] = 'normal'
@@ -337,11 +344,13 @@ class ui():
         def closing():
             if(self.vaild):
                 if(b2.get()):
+                    self.effects = 2
                     self.accessOriginal('Set')
                     e.closing()
                     self.gradientck['state'] = 'disabled'
                     self.openingck['state'] = 'disabled'
                 else:
+                    self.effects = 0
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.gradientck['state'] = 'normal'
                     self.openingck['state'] = 'normal'
@@ -351,11 +360,13 @@ class ui():
         def gradient():
             if(self.vaild):
                 if(b3.get()):
+                    self.effects = 3
                     self.accessOriginal('Set')
                     e.gradient()
                     self.openingck['state'] = 'disabled'
                     self.closingck['state'] = 'disabled'
                 else:
+                    self.effects = 0
                     cv2.imwrite("Preview.png", self.accessOriginal('Get'))
                     self.openingck['state'] = 'normal'
                     self.closingck['state'] = 'normal'
@@ -367,9 +378,9 @@ class ui():
                 e.filter(self.clist.get())
                 self.createFlipedImage()
             self.updatePic()
-        def flip(mode):
+        def flip():
             if(self.vaild): 
-                p.flip(mode)
+                p.flip(self.radio.get())
                 self.createFilteredImage()
             self.updatePic()
         def rotate():
@@ -430,6 +441,111 @@ class ui():
                     self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                     self.zoom['state'] = 'disabled'
+        def undo():
+            #變數紀錄: 已導入?, H值, S值, V值, 是否應用遮罩, 平衡落差, 三種效果的應用狀況, 其他效果的應用狀況, 固定比例, 縮放值, 長, 寬, 翻轉模式, 旋轉模式
+            self.redo['state'] = 'normal'
+            state, argu = s.undo()
+            if(not state): self.undo['state'] = 'disabled'
+            if(not argu[0]):#已導入?
+                self.vaild = 0
+                self.entryL['state'] = 'normal'; self.entryU['state'] = 'normal'
+                self.reset()
+                self.entryL['state'] = 'disabled'; self.entryU['state'] = 'disabled'
+                self.createPreview()
+                self.updatePic(True)
+                return None
+            self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
+            self.H_slider.set(argu[1]); self.S_slider.set(argu[2]); self.V_slider.set(argu[3])
+            self.color_block['bg'] = "%s" % ("#%02x%02x%02x" % (argu[1], argu[2], argu[3]))
+            if(argu[4]):
+                self.H_slider['state'] = 'disabled'; self.S_slider['state'] = 'disabled'; self.V_slider['state'] = 'disabled'
+                if(self.color_block_btn['state'] == 'normal'): self.state = not self.state
+                self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'normal'
+            else:
+                if(self.color_block_btn2['state'] == 'normal'): self.state = not self.state
+                self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
+            self.edv.set(argu[5])
+            self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect()
+            if(argu[6] == 0):
+                self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+            elif(argu[6] == 1):
+                self.openingck['state'] = 'normal'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
+                self.openingck.select()           
+            elif(argu[6] == 2):
+                self.openingck['state'] = 'disabled'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'disabled'
+                self.closingck.select()
+            else:
+                self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'normal'
+                self.gradientck.select()
+            self.clist.current(argu[7])
+            self.zoom['state'] = 'normal'; self.height['state'] = 'normal'; self.width['state'] = 'normal'
+            self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+            if(argu[8]):
+                self.fixedscale.select()
+                self.zoom.set(argu[9])
+                self.dimension = (int(argu[10]), int(argu[11]))
+                self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                self.height['state'] = 'disabled'; self.width['state'] = 'disabled'
+            else:
+                self.fixedscale.deselect()
+                self.zoom.set(argu[9])
+                self.dimension = (int(argu[10]), int(argu[11]))
+                self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                self.zoom['state'] = 'disabled'
+            self.display["text"] = "%d x %d (px)" % (self.dimension[0], self.dimension[1])
+            self.radio.set(argu[12])
+            self.dlist.current(argu[13])
+            self.createFilteredImage()
+            self.createFlipedImage()
+            self.updatePic(True)
+        def redo():
+            self.undo['state'] = 'normal'
+            state, argu = s.redo()
+            if(not state): self.redo['state'] = 'disabled'
+            self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
+            self.H_slider.set(argu[1]); self.S_slider.set(argu[2]); self.V_slider.set(argu[3])
+            self.color_block['bg'] = "%s" % ("#%02x%02x%02x" % (argu[1], argu[2], argu[3]))
+            if(argu[4]):
+                self.H_slider['state'] = 'disabled'; self.S_slider['state'] = 'disabled'; self.V_slider['state'] = 'disabled'
+                if(self.color_block_btn['state'] == 'normal'): self.state = not self.state
+                self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'normal'
+            else:
+                if(self.color_block_btn2['state'] == 'normal'): self.state = not self.state
+                self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
+            self.edv.set(argu[5])
+            self.openingck.deselect(); self.closingck.deselect(); self.gradientck.deselect()
+            if(argu[6] == 0):
+                self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+            elif(argu[6] == 1):
+                self.openingck['state'] = 'normal'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
+                self.openingck.select()           
+            elif(argu[6] == 2):
+                self.openingck['state'] = 'disabled'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'disabled'
+                self.closingck.select()
+            else:
+                self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'normal'
+                self.gradientck.select()
+            self.clist.current(argu[7])
+            self.zoom['state'] = 'normal'; self.height['state'] = 'normal'; self.width['state'] = 'normal'
+            self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
+            if(argu[8]):
+                self.fixedscale.select()
+                self.zoom.set(argu[9])
+                self.dimension = (int(argu[10]), int(argu[11]))
+                self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                self.height['state'] = 'disabled'; self.width['state'] = 'disabled'
+            else:
+                self.fixedscale.deselect()
+                self.zoom.set(argu[9])
+                self.dimension = (int(argu[10]), int(argu[11]))
+                self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
+                self.zoom['state'] = 'disabled'
+            self.display["text"] = "%d x %d" % (self.dimension[0], self.dimension[1]) + ' (px)'
+            self.radio.set(argu[12])
+            self.dlist.current(argu[13])
+            self.createFilteredImage()
+            self.createFlipedImage()
+            self.updatePic(True)
 
         #視窗介面
         self.win.title('OmniImaginer.exe')
@@ -535,10 +651,11 @@ class ui():
         self.height.place(x=403, y=282)
             #旋轉與翻轉的部分
         self.rolabel = tk.Label(text="翻轉:").place(x=320, y=308)
-        self.n_flipbtn =tk.Radiobutton(text="不翻轉", value=1, command= lambda x = None: flip(0))
-        self.h_flipbtn = tk.Radiobutton(text="水平翻轉", value=2, command= lambda x = None: flip(1)).place(x=420, y=330)
-        self.v_flipbtn = tk.Radiobutton(text="垂直翻轉", value=3, command= lambda x = None: flip(2)).place(x=320, y=355)
-        self.b_flipbtn = tk.Radiobutton(text="水平+垂直", value=4, command= lambda x = None: flip(3)).place(x=420, y=355)
+        self.radio = tk.IntVar()
+        self.n_flipbtn =tk.Radiobutton(text="不翻轉", variable=self.radio, value=0, command=flip)
+        self.h_flipbtn = tk.Radiobutton(text="水平翻轉", variable=self.radio, value=1, command=flip)
+        self.v_flipbtn = tk.Radiobutton(text="垂直翻轉", variable=self.radio, value=2, command=flip)
+        self.b_flipbtn = tk.Radiobutton(text="水平+垂直", variable=self.radio, value=3, command=flip)
         self.crolabel = tk.Label(text="旋轉:").place(x=320, y=385)
         self.croinput = tk.Text(height=1, width=4, state='disabled')
         self.degree = tk.Label(text="度").place(x=385, y=385)
@@ -546,7 +663,7 @@ class ui():
         self.d_confirm = tk.Button(text="設定旋轉", command=rotate).place(x=469, y=382)
         self.dlist.current(0)
         self.n_flipbtn.select()
-        self.n_flipbtn.place(x=320, y=330)
+        self.n_flipbtn.place(x=320, y=330); self.h_flipbtn.place(x=420, y=330); self.v_flipbtn.place(x=320, y=355); self.b_flipbtn.place(x=420, y=355)
         self.croinput.place(x=355, y=388)
         self.dlist.place(x=405, y=386)
         #圖片資訊顯示(ID)
@@ -558,8 +675,10 @@ class ui():
         self.imgname.place(x=688, y=150)
         self.impway.place(x=688, y=170)
         #還原、重作(Un/Redo)
-        self.undo = tk.Button(text="還原上一動作").place(x=865, y=145)
-        self.redo = tk.Button(text="重作上一動作").place(x=865, y=185)
+        self.undo = tk.Button(text="還原上一動作", state='disabled', command=undo)
+        self.redo = tk.Button(text="重作上一動作", state='disabled', command=redo)
+        self.undo.place(x=865, y=145)
+        self.redo.place(x=865, y=185)
         #圖片預覽(PoI)
         self.plabel = tk.Label(text="預覽圖片:").place(x=570, y=200)
         img = Image.open('Preview.png')
