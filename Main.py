@@ -1,5 +1,5 @@
 ﻿import sys, os
-from ctypes import windll
+#from ctypes import windll
 #windll.shcore.SetProcessDpiAwareness(1)
 
 def checkReqPackages():
@@ -14,10 +14,5 @@ def checkReqPackages():
 
 if __name__ == "__main__":
     import Classes.UserInterface as UI
-    import Classes.FileManager as FM
     UI.ui().open_window()
-
-#meow
-#f = fm.file_man()
-#f.sendFileViaMail()
 

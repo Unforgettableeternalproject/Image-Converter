@@ -24,7 +24,7 @@ class ui():
 
     def __init__(self) -> None:
         self.original = None
-        self.vaild = False
+        self.valid = False
         self.win = tk.Tk()
         self.defaultFont = tkFont.Font(root=self.win, name="TkDefaultFont", exists=True)
         self.defaultFont.configure(family="Microsoft YaHei",
@@ -53,7 +53,7 @@ class ui():
         else: pass
 
     def sendM(self):
-        if(self.vaild):
+        if(self.valid):
             if(not self.status):
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
@@ -68,7 +68,7 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveL(self):
-        if(self.vaild):
+        if(self.valid):
             try:
                 flag = f.saveFileLocal()
                 if(flag): showinfo('匯出成功!!', '您修改過的圖檔已經成功儲存至本機!')
@@ -80,7 +80,7 @@ class ui():
             showerror('沒有可用的匯出圖片!', '您尚未匯入任何圖片，請再試一次。')
 
     def saveC(self):
-        if(self.vaild):
+        if(self.valid):
             if(not self.status):
                 showerror('沒有連線!', '你尚未連線到網際網路!')
                 return None
@@ -117,7 +117,7 @@ class ui():
         file_name = '範例圖片.png'
         importtype = "範例圖片檔案"
         self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
-        self.vaild = True
+        self.valid = True
         self.reset()
         self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
         self.updateID(file_name, importtype)
@@ -143,7 +143,7 @@ class ui():
         self.dlist.current(0)
         self.clist.current(0)
         self.effects = 0
-        if(self.vaild):
+        if(self.valid):
             self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
             self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
             self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
@@ -161,7 +161,7 @@ class ui():
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         
     def createPreview(self):
-        self.vaild = False
+        self.valid = False
         og = cv2.imread("Default Preview.png")
         cv2.imwrite("Preview.png", og)    
         
@@ -176,21 +176,18 @@ class ui():
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild = f.loadFileViaDrive()
-        if(self.tvaild):
+        self.tvalid = f.loadFileViaDrive()
+        if(self.tvalid):
             showinfo('成功!', '雲端檔案已經成功匯入!')
             file_name = 'cloud_img.png'
             importtype = "從雲端硬碟導入"
-            self.vaild = True
+            self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
             self.reset()
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
-        else:
-            pass
-            #showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
-        self.updatePic()
+            self.updatePic()
             
     def openFileL(self):
         # msg = "Hello, {}.".format(entry.get())
@@ -202,32 +199,32 @@ class ui():
         else: 
             image = cv2.imdecode(np.fromfile(cpath, dtype=np.uint8), -1);
             cv2.imwrite("Preview.png", image)
-            self.vaild = True
+            self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
             self.reset()
             self.entryL.insert("insert", cpath)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
-        self.updatePic()
+            self.updatePic()
         
     def openFIleU(self):
         if(not self.status):
             showerror('沒有連線!', '你尚未連線到網際網路!')
             return None
-        self.tvaild, url = f.loadFileURL()
-        if(self.tvaild): 
+        self.tvalid, url = f.loadFileURL()
+        if(self.tvalid): 
             file_name = 'url_image.png'
             importtype = "從URL導入" 
-            self.vaild = True
+            self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
             self.reset()
             self.entryU.insert("insert", url)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
+            self.updatePic()
         else: 
             if(not url): pass 
             else: showerror('匯入失敗!', '檔案可能有問題或者伺服器出錯，請再試一次。')
-        self.updatePic()
 
     def updateID(self, filename, way):
         if(len(filename) > 15): filename = filename[:15] + '...'
@@ -248,22 +245,24 @@ class ui():
                 dispic = ImageTk.PhotoImage(realpic.resize((round(300/ratio), 300), Image.ANTIALIAS))
             else:
                 dispic = ImageTk.PhotoImage(realpic.resize((420, round(420*ratio)), Image.ANTIALIAS))
-        except Exception as e:
-            print(e)
+        except Exception as err:
+            print(err)
             img = Image.open('Preview.png')
             dispic = ImageTk.PhotoImage(img.resize((420,300), Image.ANTIALIAS))
             self.reset()
             showerror('檔案預覽失敗', '出現未知的問題導致檔案無法顯示，我們深感抱歉。')
         self.preview.imgtk=dispic #換圖片
         self.preview.config(image=dispic)
-        if(not skip): s.add_act((self.vaild, self.H_slider.get(), self.S_slider.get(), self.V_slider.get(), self.state, self.edv.get(), self.effects, self.clist.current(), self.chkscale.get(), self.zoom.get(), self.width.get("1.0",'end-1c').strip(), self.height.get("1.0",'end-1c').strip(), self.radio.get(), self.dlist.current()))
+        if(not skip and self.valid): 
+            c = s.add_act((self.valid, self.H_slider.get(), self.S_slider.get(), self.V_slider.get(), self.state, self.edv.get(), self.effects, self.clist.current(), self.chkscale.get(), self.zoom.get(), self.width.get("1.0",'end-1c').strip(), self.height.get("1.0",'end-1c').strip(), self.radio.get(), self.dlist.current()), e.filters, p.flips)
+            if(c): self.redo['state'] = 'disabled'
         #Get picture size and scale it with the preview window (420, 300)
         
     def createFlipedImage(self):
-        p.filps[0] = cv2.imread("Preview.png")
-        p.filps[1] = cv2.flip(p.filps[0], 1)
-        p.filps[2] = cv2.flip(p.filps[0], 0)
-        p.filps[3] = cv2.flip(p.filps[0], -1)
+        p.flips[0] = cv2.imread("Preview.png")
+        p.flips[1] = cv2.flip(p.flips[0], 1)
+        p.flips[2] = cv2.flip(p.flips[0], 0)
+        p.flips[3] = cv2.flip(p.flips[0], -1)
         self.n_flipbtn.select()
 
     def createFilteredImage(self):
@@ -293,7 +292,7 @@ class ui():
         def hsv(event):
             self.color_block['bg'] = e.changeHSV(self.H_slider.get(), self.S_slider.get(), self.V_slider.get())
         def update():
-            if(self.vaild):
+            if(self.valid):
                 self.state = not self.state
                 e.updateHSV(self.state)
                 if(self.state):
@@ -312,21 +311,21 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def erode():
-            if(self.vaild):
+            if(self.valid):
                 e.erode()
                 self.createFilteredImage()
                 self.createFlipedImage()
                 self.edv.set(str(int(self.edv.get())+1))
             self.updatePic()
         def dilate():
-            if(self.vaild):
+            if(self.valid):
                 e.dilate()
                 self.createFilteredImage()
                 self.createFlipedImage()
                 self.edv.set(str(int(self.edv.get())-1))
             self.updatePic()
         def opening():
-            if(self.vaild):
+            if(self.valid):
                 if(b1.get()): #被選取時
                     self.effects = 1
                     self.accessOriginal('Set')
@@ -342,7 +341,7 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def closing():
-            if(self.vaild):
+            if(self.valid):
                 if(b2.get()):
                     self.effects = 2
                     self.accessOriginal('Set')
@@ -358,7 +357,7 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def gradient():
-            if(self.vaild):
+            if(self.valid):
                 if(b3.get()):
                     self.effects = 3
                     self.accessOriginal('Set')
@@ -374,17 +373,17 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def filter():
-            if(self.vaild):
+            if(self.valid):
                 e.filter(self.clist.get())
                 self.createFlipedImage()
             self.updatePic()
         def flip():
-            if(self.vaild): 
+            if(self.valid): 
                 p.flip(self.radio.get())
                 self.createFilteredImage()
             self.updatePic()
         def rotate():
-            if(self.vaild):
+            if(self.valid):
                 value = self.croinput.get('1.0', 'end-1c').strip()
                 f = True if(value != '') else False
                 for i in value:
@@ -399,7 +398,7 @@ class ui():
                 self.createFlipedImage()
             self.updatePic()
         def zoom(event):
-            if(self.vaild and self.chkscale.get()):
+            if(self.valid and self.chkscale.get()):
                 if(self.zoom.get() > 0): percent = 1+(self.zoom.get() * 0.01)
                 else: percent = 1+(self.zoom.get() * 0.005)
                 new_w, new_h = p.zoom(percent)
@@ -409,7 +408,7 @@ class ui():
                 self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                 self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
         def resize():
-            if(self.vaild):
+            if(self.valid):
                 f = True if(self.width.get("1.0",'end-1c').strip() != '' and self.height.get("1.0",'end-1c').strip() != '') else False
                 for i in self.width.get("1.0",'end-1c').strip():
                     if(not i.isdigit()): f = False
@@ -432,7 +431,7 @@ class ui():
                     self.getImageSize()
             self.updatePic()
         def check():
-            if(self.vaild):
+            if(self.valid):
                 if(self.chkscale.get()):
                     self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
                     self.zoom['state'] = 'normal'
@@ -444,10 +443,10 @@ class ui():
         def undo():
             #變數紀錄: 已導入?, H值, S值, V值, 是否應用遮罩, 平衡落差, 三種效果的應用狀況, 其他效果的應用狀況, 固定比例, 縮放值, 長, 寬, 翻轉模式, 旋轉模式
             self.redo['state'] = 'normal'
-            state, argu = s.undo()
+            state, argu, filt, flip = s.undo()
             if(not state): self.undo['state'] = 'disabled'
             if(not argu[0]):#已導入?
-                self.vaild = 0
+                self.valid = 0
                 self.entryL['state'] = 'normal'; self.entryU['state'] = 'normal'
                 self.reset()
                 self.entryL['state'] = 'disabled'; self.entryU['state'] = 'disabled'
@@ -456,7 +455,6 @@ class ui():
                 return None
             self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
             self.H_slider.set(argu[1]); self.S_slider.set(argu[2]); self.V_slider.set(argu[3])
-            self.color_block['bg'] = "%s" % ("#%02x%02x%02x" % (argu[1], argu[2], argu[3]))
             if(argu[4]):
                 self.H_slider['state'] = 'disabled'; self.S_slider['state'] = 'disabled'; self.V_slider['state'] = 'disabled'
                 if(self.color_block_btn['state'] == 'normal'): self.state = not self.state
@@ -495,16 +493,14 @@ class ui():
             self.display["text"] = "%d x %d (px)" % (self.dimension[0], self.dimension[1])
             self.radio.set(argu[12])
             self.dlist.current(argu[13])
-            self.createFilteredImage()
-            self.createFlipedImage()
+            e.filters = filt; p.flips = flip
             self.updatePic(True)
         def redo():
             self.undo['state'] = 'normal'
-            state, argu = s.redo()
+            state, argu, filt, flip = s.redo()
             if(not state): self.redo['state'] = 'disabled'
             self.H_slider['state'] = 'normal'; self.S_slider['state'] = 'normal'; self.V_slider['state'] = 'normal'
             self.H_slider.set(argu[1]); self.S_slider.set(argu[2]); self.V_slider.set(argu[3])
-            self.color_block['bg'] = "%s" % ("#%02x%02x%02x" % (argu[1], argu[2], argu[3]))
             if(argu[4]):
                 self.H_slider['state'] = 'disabled'; self.S_slider['state'] = 'disabled'; self.V_slider['state'] = 'disabled'
                 if(self.color_block_btn['state'] == 'normal'): self.state = not self.state
@@ -543,8 +539,7 @@ class ui():
             self.display["text"] = "%d x %d" % (self.dimension[0], self.dimension[1]) + ' (px)'
             self.radio.set(argu[12])
             self.dlist.current(argu[13])
-            self.createFilteredImage()
-            self.createFlipedImage()
+            e.filters = filt; p.flips = flip
             self.updatePic(True)
 
         #視窗介面
