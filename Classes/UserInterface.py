@@ -109,7 +109,7 @@ class ui():
             if(not self.status): self.dstatus['fg'] = "red"
             else: self.dstatus['fg'] = 'green'
             self.display["text"] = "尚未導入!!"
-        else: pass #Not Yet Done
+        else: pass
 
     def example(self):
         image = cv2.imread('Default Image.png')
@@ -144,14 +144,21 @@ class ui():
         self.clist.current(0)
         self.effects = 0
         if(self.valid):
-            self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
-            self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
-            self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
-            self.getImageSize()
-            self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
-            self.undo['state'] = 'normal'; self.redo['state'] = 'disabled'
-            self.createFlipedImage()
-            self.createFilteredImage()
+            f = self.getImageSize()
+            if(f):
+                self.openingck['state'] = 'normal'; self.closingck['state'] = 'normal'; self.gradientck['state'] = 'normal'
+                self.color_block_btn['state'] = 'normal'; self.color_block_btn2['state'] = 'disabled'
+                self.croinput['state'] = 'normal'; self.croinput.delete(1.0, "end")
+                self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+                self.undo['state'] = 'normal'; self.redo['state'] = 'disabled'
+                self.createFlipedImage()
+                self.createFilteredImage()
+                return True
+            else: 
+                self.vaild = False
+                self.createPreview()
+                self.updatePic()
+                return False
         else:
             self.openingck['state'] = 'disabled'; self.closingck['state'] = 'disabled'; self.gradientck['state'] = 'disabled'
             self.color_block_btn['state'] = 'disabled'; self.color_block_btn2['state'] = 'disabled'
@@ -159,6 +166,7 @@ class ui():
             self.fixedscale.select(); self.fixedscale['state'] = 'disabled'
             self.undo['state'] = 'disabled'; self.redo['state'] = 'disabled'
             self.width['state'] = 'disabled'; self.height['state'] = 'disabled'
+            return False
         
     def createPreview(self):
         self.valid = False
@@ -183,7 +191,9 @@ class ui():
             importtype = "從雲端硬碟導入"
             self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
-            self.reset()
+            if(not self.reset()):
+                self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+                return None
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.btnGD['relief'] = SUNKEN; self.btnGD['state'] = DISABLED
             self.updateID(file_name, importtype)
@@ -201,7 +211,9 @@ class ui():
             cv2.imwrite("Preview.png", image)
             self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
-            self.reset()
+            if(not self.reset()):
+                self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+                return None
             self.entryL.insert("insert", cpath)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
@@ -217,7 +229,9 @@ class ui():
             importtype = "從URL導入" 
             self.valid = True
             self.entryL['state'] = NORMAL; self.entryU['state'] = NORMAL
-            self.reset()
+            if(not self.reset()):
+                self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
+                return None
             self.entryU.insert("insert", url)
             self.entryL['state'] = DISABLED; self.entryU['state'] = DISABLED
             self.updateID(file_name, importtype)
@@ -279,6 +293,9 @@ class ui():
     def getImageSize(self):
         img = cv2.imread("Preview.png")
         self.dimension = (img.shape[1], img.shape[0])
+        if(self.dimension[0] >= 5000 or self.dimension[1] >= 5000 or (self.dimension[0]**2 + self.dimension[1]**2)**0.5 >= 5000):
+            showerror("檔案大小超出限制!", "您選擇的圖片檔案的大小可能超出了範圍限制，請選取其他圖片。")
+            return False
         output = "%d x %d" % (self.dimension[0], self.dimension[1])
         self.display["text"] = output + ' (px)'
         self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
@@ -287,6 +304,7 @@ class ui():
             self.zoom['state'] = 'normal'
             self.zoom.set(0)
             self.zoom['state'] = 'disabled'
+        return True
 
     def open_window(self):
         def hsv(event):
