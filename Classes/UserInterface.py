@@ -436,8 +436,8 @@ class ui():
                     showwarning("不合理的輸入尺寸!", "寬度或高度可能有其一並未被填寫或是輸入的值並非整數，請重新再試一次!")
                     self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
-                elif(int(self.width.get("1.0",'end-1c')) > 5000 or int(self.height.get("1.0",'end-1c')) > 5000):
-                    showwarning("輸入尺寸超出限制!", "寬度或高度可能有其一超出了此應用程式的限制(Max:5000x5000 px)，請重新再試一次!")
+                elif(int(self.width.get("1.0",'end-1c')) > 5000 or int(self.height.get("1.0",'end-1c')) > 5000 or (int(self.height.get("1.0",'end-1c'))**2 + int(self.width.get("1.0",'end-1c'))**2)**0.5 >= 5000):
+                    showwarning("輸入尺寸超出限制!", "寬度或高度可能有其一超出了此應用程式的限制(Max:25000000 px square)，請重新再試一次!")
                     self.width.delete('1.0', 'end-1c'); self.height.delete('1.0', 'end-1c')
                     self.width.insert("insert", self.dimension[0]); self.height.insert("insert", self.dimension[1])
                 else:
