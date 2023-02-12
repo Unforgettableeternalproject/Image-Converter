@@ -257,7 +257,7 @@ class fm():
                     else: alertmsg.set("請輸入真實存在的圖片位址!!")
 
         prompt = tk.Toplevel()
-        prompt.iconbitmap('Bernie.ico')
+        prompt.iconbitmap('Image-Converter/Bernie.ico')
         prompt.title("網路圖片下載小精靈")
         prompt.geometry('350x150')
         prompt.resizable(0,0)
