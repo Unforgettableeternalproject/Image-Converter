@@ -715,19 +715,23 @@ class ui():
         self.file.add_command(label='完全重置', foreground='red', command=self.resetall) #跳出視窗顯示警告，並詢問是否真的要重置
 
         self.window = tk.Menu(self.menu, tearoff=0)
-        self.window.add_command(label='步驟紀錄') #跳出新視窗，顯示步驟紀錄
-        self.window.add_command(label='開發者資訊') #跳出新視窗，顯示開發者資訊
+        self.window.add_command(label='步驟紀錄', state='disabled', accelerator="尚未實裝") #跳出新視窗，顯示步驟紀錄
+        self.window.add_command(label='開發者資訊', state='disabled', accelerator="尚未實裝") #跳出新視窗，顯示開發者資訊
 
         self.view = tk.Menu(self.menu, tearoff=0)
-        self.view_options = tk.Menu(self.view, tearoff=0)
-        self.view_options.add_command(label='小') #變更為小視窗
-        self.view_options.add_command(label='中等') #變更為中等視窗
-        self.view_options.add_command(label='大') #變更為大視窗
-        self.view.add_cascade(label='更改視窗大小', menu=self.view_options) #給予更改視窗比例的選項
+        self.lang_options = tk.Menu(self.view, tearoff=0)
+        self.lang_options.add_command(label='繁體中文') #變更為小視窗
+        self.lang_options.add_command(label='簡體中文') #變更為中等視窗
+        self.lang_options.add_command(label='英文') #變更為大視窗
+        self.view_theme = tk.Menu(self.view, tearoff=0)
+        self.view_theme.add_command(label='明亮')
+        self.view_theme.add_command(label='灰暗')
+        self.view.add_cascade(label='更改系統語言', menu=self.lang_options, state='disabled') #給予更改視窗比例的選項
+        self.view.add_cascade(label='更改系統主題', menu=self.lang_options, state='disabled')
 
         self.help = tk.Menu(self.menu, tearoff=0)
-        self.window.add_command(label='功能介紹') #跳出新視窗，顯示一個功能介紹的畫面(Help)
-        self.help.add_command(label='聯絡開發者') #跳出新視窗，內嵌開發者聯絡資訊(直接寄信?)
+        self.help.add_command(label='功能介紹', state='disabled', accelerator="尚未實裝") #跳出新視窗，顯示一個功能介紹的畫面(Help)
+        self.help.add_command(label='聯絡開發者', state='disabled', accelerator="尚未實裝") #跳出新視窗，內嵌開發者聯絡資訊(直接寄信?)
 
         self.menu.add_cascade(label='檔案', menu=self.file)
         self.menu.add_cascade(label='視窗', menu=self.window)
