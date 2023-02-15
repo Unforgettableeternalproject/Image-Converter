@@ -7,7 +7,6 @@ import tkinter.font as tkFont
 from idlelib.tooltip import Hovertip
 from tkinter.messagebox import showinfo, showerror, showwarning, askyesno, askokcancel
 import requests
-import subprocess
 import Classes.FileManager as FM
 import Classes.EffectProcessor as EP
 import Classes.PositionProcessor as PP
