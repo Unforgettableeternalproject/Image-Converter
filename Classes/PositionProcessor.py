@@ -3,10 +3,10 @@ import numpy as np
 
 class pp():
     def __init__(self):
-        self.filps = [None, None, None, None]
+        self.flips = [None, None, None, None]
 
     def flip(self, mode):
-        cv2.imwrite("Preview.png", self.filps[mode])
+        cv2.imwrite("Preview.png", self.flips[mode])
 
     def rotate(self, angle):
         image = cv2.imread("Preview.png")
