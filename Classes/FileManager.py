@@ -19,7 +19,7 @@ DROPBOX_ACCESS_TOKEN = 'sl.BRdTAQzfjPVBPItFvornCS0d5rYOXsUq8kpviwEk91Y4nmCfphAtN
 DEFAULT_MAIL_ADRESS = 'ptyc4076@gmail.com'
 DEFAULT__MAIL_TOKEN = 'yvjzdurxghiehhbv'
 
-class file_man():
+class fm():
     def __init__(self) -> None:
         self.creds = None
         pass
@@ -59,7 +59,7 @@ class file_man():
         def verify():
             regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
             if(not re.fullmatch(regex, mail_to.get())):
-                alertmsg.set("Please enter a valid email adress!")
+                alertmsg.set("請輸入真實存在的電子郵件信箱!")
             else:
                 if(not subject.get('1.0', 'end-1c') or not content.get('1.0', 'end-1c')):
                     ans = askyesno('您有資料沒有填寫!', '您有主旨或內容並沒有填寫，要繼續寄送嗎?', icon = 'warning')
@@ -71,19 +71,19 @@ class file_man():
         alertmsg = tk.StringVar()
         promptM = tk.Toplevel()
         promptM.iconbitmap('Bernie.ico')
-        promptM.title("Image Sender")
+        promptM.title("圖片寄送小精靈")
         promptM.geometry('500x500')
         promptM.resizable(0,0)
         Cs = tk.Frame(promptM, width=200, height=200)
         Cs.pack()
         t = 50
-        display = tk.Label(promptM, text="Mail To:").place(x=60, y=48+t)
-        sub_display = tk.Label(promptM, text="Subject:").place(x=60, y=83+t)
-        con_display = tk.Label(promptM, text='Content:\n(Image\nincluded!)').place(x=56, y=160+t)
+        display = tk.Label(promptM, text="收件信箱:").place(x=60, y=48+t)
+        sub_display = tk.Label(promptM, text="信件主旨:").place(x=60, y=83+t)
+        con_display = tk.Label(promptM, text="信件內容:\n(已包含\n圖像!)").place(x=60, y=160+t)
         mail = tk.Entry(promptM, textvariable=mail_to, width=40).place(x=130, y=50+t)
         subject = tk.Text(promptM, width=40, height=2)
         content = tk.Text(promptM, width=40, height=10)
-        button = tk.Button(promptM, text="Confirm and Send", width=40, bg='lightslategrey', fg='gainsboro', command=verify).place(x=100, y=280+t)
+        button = tk.Button(promptM, text="確認並送出", width=40, bg='lightslategrey', fg='gainsboro', command=verify).place(x=100, y=280+t)
         msglabel = tk.Label(promptM, textvariable=alertmsg, fg='maroon').place(x=130, y=20+t)
         subject.place(x=130, y=80+t)
         content.place(x=130, y=120+t)
@@ -116,7 +116,7 @@ class file_man():
        
         def setvariables():
             if not name.get():
-                alertmsg.set("Please enter a file name!!")
+                alertmsg.set("請輸入檔案名稱!!")
                 print('no')
             else:
                 if(typsel.get() == 'png 檔案'): mimty = 'image/png'
@@ -144,16 +144,16 @@ class file_man():
         alertmsg = tk.StringVar()
         promptD2 = tk.Toplevel()
         promptD2.iconbitmap('Bernie.ico')
-        promptD2.title("Google Drive File Uploader")
+        promptD2.title("雲端上傳小精靈")
         promptD2.geometry('350x150')
         promptD2.resizable(0,0)
         Cs = tk.Frame(promptD2, width=200, height=200)
         Cs.pack()
-        inputlabel = tk.Label(Cs, text="Enter your file name and type:")
+        inputlabel = tk.Label(Cs, text="輸入檔案名稱與類型")
         entry = tk.Entry(Cs, textvariable=name)
         typsel = ttk.Combobox(Cs, width=17, state="readonly", value=['png 檔案', 'jpeg 檔案', 'bmp 檔案'])
         typsel.current(0)
-        button = tk.Button(Cs, text="Submit", width=20, bg='lightslategrey', fg='gainsboro', command=setvariables)
+        button = tk.Button(Cs, text="確認", width=20, bg='lightslategrey', fg='gainsboro', command=setvariables)
         msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
         inputlabel.pack()
         entry.pack()
@@ -171,10 +171,10 @@ class file_man():
             except:
                 fid = ''
             if (file_name.get() == "" or not self.is_ImageFile(fid)):
-                alertmsg.set("The file was not an image.")
+                alertmsg.set("該檔案並不是圖片!")
             else:
                 msglabel['fg'] = 'forestgreen'
-                alertmsg.set("Trying to download...")
+                alertmsg.set("試圖下載中...")
                 promptD.update()
                 try:
                     msg = self.driveDownload(fid)
@@ -184,12 +184,11 @@ class file_man():
                     self.vaild = True
                 except Exception:
                     msglabel['fg'] = 'maroon'
-                    alertmsg.set("Unknown error occured, please try another file.")
+                    alertmsg.set("發生錯誤，請嘗試其他檔案!")
 
-        self.cpath = tk.StringVar()
         promptD = tk.Toplevel()
         promptD.iconbitmap('Bernie.ico')
-        promptD.title("Google Drive File Selector")
+        promptD.title("雲端下載小精靈")
         promptD.geometry('350x150')
         promptD.resizable(0,0)
         global item_list
@@ -198,18 +197,20 @@ class file_man():
             if (len(item_list) == 0): 
                 showerror('檔案錯誤', '沒有使用者最近存取的檔案!')
                 promptD.destroy()
+                return False
         except:
             showerror('檔案錯誤', '存取雲端硬碟時出現錯誤!')
             promptD.destroy()
+            return False
         display = [x['name'] for x in item_list]
         file_id = [x['id'] for x in item_list]
         Cs = tk.Frame(promptD, width=200, height=200)
         Cs.pack()
         file_name = tk.StringVar()
         alertmsg = tk.StringVar()
-        inputlabel = tk.Label(Cs, text="Choose a file from below (Must be an image):")
+        inputlabel = tk.Label(Cs, text="從以下列表中選擇檔案 (必須為圖片檔):")
         userchoosefrom = ttk.Combobox(Cs, textvariable=file_name, width=17, state="readonly", value=display)
-        yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
+        yrbtn = tk.Button(Cs, text="確認", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
         msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
         inputlabel.pack()
         userchoosefrom.pack()
@@ -230,10 +231,10 @@ class file_man():
 
         def chkpath():
             if(path.get() == ""):
-                alertmsg.set("Please enter a image URL.")
+                alertmsg.set("請輸入圖片位址!")
             else:
                 if(not is_url(path.get())):
-                    alertmsg.set("Please enter a VALID image URL.")
+                    alertmsg.set("請輸入真實存在的圖片位址!!")
                 else:
                     ftype = ''
                     for i in supported_files:
@@ -250,29 +251,26 @@ class file_man():
                             pass
                         prompt.destroy()
                         prompt.update()
-                    else: alertmsg.set("Please enter a VALID image URL.")
+                    else: alertmsg.set("請輸入真實存在的圖片位址!!")
 
         prompt = tk.Toplevel()
         prompt.iconbitmap('Bernie.ico')
-        prompt.title("Image URL Fetcher")
+        prompt.title("網路圖片下載小精靈")
         prompt.geometry('350x150')
         prompt.resizable(0,0)
         Cs = tk.Frame(prompt, width=200, height=200)
         Cs.pack()
         path = tk.StringVar()
         alertmsg = tk.StringVar()
-        inputlabel = tk.Label(Cs, text="Enter Image URL:")
+        inputlabel = tk.Label(Cs, text="輸入圖片位址:")
         userkeyin = tk.Entry(Cs, textvariable=path)
-        yrbtn = tk.Button(Cs, text="Confirm", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
+        yrbtn = tk.Button(Cs, text="確認", width=20, bg='lightslategrey', fg='gainsboro', command=chkpath)
         msglabel = tk.Label(Cs, textvariable=alertmsg, fg='maroon')
         inputlabel.pack()
         userkeyin.pack()
         yrbtn.pack()
         msglabel.pack()
         prompt.wait_window()
-        #print(ftype)
-        ##filename = "url_img" + ftype if ftype != '' else "Invalid Input!!!"
-        #ret = os.path.realpath(filename) if filename != 'Invalid Input!!!' else ''
         return self.vaild, path.get()
 
     def loadFileLocal(self):
@@ -280,13 +278,6 @@ class file_man():
         return file_path
 
     def driveDownload(self, id):
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', SCOPES)
-                self.creds = flow.run_local_server(port=0)
         service = build('drive', 'v3', credentials=self.creds)
         request = service.files().get_media(
             fileId=id,
@@ -306,17 +297,10 @@ class file_man():
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-        return "Download completed!"
+        return "完成下載!"
 
     def is_ImageFile(self, id):
         supported_files = ['image/jpg', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/heic']
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', SCOPES)
-                self.creds = flow.run_local_server(port=0)
         service = build('drive', 'v3', credentials=self.creds)
         try:
             file_metadata = service.files().get(
@@ -333,9 +317,12 @@ class file_man():
     def driveFetch(self):
         if not self.creds or not self.creds.valid:
             if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
+                try:
+                    self.creds.refresh(Request())
+                except Exception as e:
+                    return e
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
+                flow = InstalledAppFlow.from_client_secrets_file(   
                     'credentials.json', SCOPES)
                 self.creds = flow.run_local_server(port=0)
         service = build('drive', 'v3', credentials=self.creds)
@@ -348,4 +335,3 @@ class file_man():
             return "沒有找到任何資料"
         else:
             return items
-fm = file_man()
