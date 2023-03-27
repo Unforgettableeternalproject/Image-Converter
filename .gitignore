@@ -127,3 +127,21 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# pngs
+Default Image.png
+Default Preview.png
+Preview.png
+Drive.png
+Dropbox.png
+圖片轉換器專案架構圖.png
+
+# icon
+Bernie.ico
+
+# jsons
+credentials.json
+token.json
+
+# txts
+lang_zh.txt

@@ -95,11 +95,8 @@ class file_man():
         im = Image.open('Preview.png')
         file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("png 檔案", "*.png"),("jpeg 檔案","*.jpeg"),("bmp 檔案", '*.bmp'),("所有檔案", "*.*")))
         if file:
-            tpe = 'png'
-            if('.jpeg' in file.name): tpe = 'jpeg'
-            if('.bmp' in file.name): tpe = 'bmp'
             abs_path = os.path.abspath(file.name)
-            im.save(abs_path, tpe) # saves the image to the input file name. 
+            im.save(abs_path, file.name.split('.')[-1]) # saves the image to the input file name. 
             return True
         else: return False
 
