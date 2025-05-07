@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Image Converter Application</Name>
     <RootNamespace>Image Converter Application</RootNamespace>
-    <InterpreterId>MSBuild|vir_env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +35,7 @@
     <Folder Include="Cloud Files\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="credentials.json" />
     <Content Include="Explanation Files\專案構圖說明.txt" />
     <Content Include="Explanation Files\位置資訊.txt" />
@@ -42,19 +43,10 @@
     <Content Include="Preview.png" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="vir_env4lap\">
-      <Id>vir_env4lap</Id>
+    <Interpreter Include="env\">
+      <Id>env</Id>
       <Version>3.10</Version>
-      <Description>vir_env4lap (Python 3.10 (64-bit))</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
-    <Interpreter Include="vir_env\">
-      <Id>vir_env</Id>
-      <Version>3.10</Version>
-      <Description>vir_env (Python 3.10 (64-bit))</Description>
+      <Description>env (Python 3.10 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
