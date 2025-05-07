@@ -128,6 +128,22 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# pngs
+Default Image.png
+Default Preview.png
+Preview.png
+Drive.png
+Concept.png
+
+# icon
+Bernie.ico
+
+# jsons
+credentials.json
+token.json
+
+# txts
+lang_zh.txt
 .vs/
 env/
 vir_env/

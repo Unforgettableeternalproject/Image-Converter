@@ -13,6 +13,5 @@ urllib3 == 1.26.9
 requests == 2.28.1
 python-dateutil == 2.8.2
 pytz == 2022.5
-dropbox == 11.35.0
 stone == 3.3.1
 ply == 3.11
